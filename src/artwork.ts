@@ -1,9 +1,9 @@
 import { gxCovers, nearestStatic, stemOf } from './barlow'
 import { POST_FRAME, type Frame } from './settings'
-import { EYEBROW_WEIGHT } from './layout'
+import { EYEBROW_WEIGHT, lettersOf } from './layout'
 import { cleanText } from './text'
 import type { ShapeResult, TapeTone } from './types'
-import { AD_COLOR, AD_PHOTO_DARKEN } from './adTokens'
+import { AD_COLOR, AD_PHOTO_DARKEN, AD_TAPE_GHOST } from './adTokens'
 
 /** Static Barlow (Fontsource): italics, and any run with a letter the variable font lacks. */
 export const FONT_FAMILY = 'Barlow'
@@ -23,10 +23,15 @@ export const staticShorthand = (size: number, weight: number, italic = false) =>
 // The Alternative Dublin brand colours, from the shared tokens (ad-tokens.json). One white: the light.
 export const BRAND = { yellow: AD_COLOR.yellow, light: AD_COLOR.light, dark: AD_COLOR.dark, white: AD_COLOR.light }
 
-export const tones: { value: TapeTone; label: string; tape: string | null; text: string }[] = [
+/** How far the photo shows through Ghost tape (the tokens' tape-ghost): the dark tape at this opacity. */
+export const TAPE_GHOST = AD_TAPE_GHOST
+
+/** The tapes. Ghost (18 Oct 2026) is the dark tape seen through: the same cut and padding, the photo showing through it, the same on every photo. */
+export const tones: { value: TapeTone; label: string; tape: string | null; text: string; opacity?: number }[] = [
   { value: 'light', label: 'Light', tape: BRAND.light, text: BRAND.dark },
   { value: 'dark', label: 'Dark', tape: BRAND.dark, text: BRAND.white },
   { value: 'yellow', label: 'Yellow', tape: BRAND.yellow, text: BRAND.dark },
+  { value: 'ghost', label: 'Ghost', tape: BRAND.dark, text: BRAND.white, opacity: TAPE_GHOST },
   { value: 'none', label: 'None', tape: null, text: BRAND.white },
 ]
 
@@ -41,10 +46,14 @@ export interface Place { x: number; y: number; scale: number }
 /** A part of the artboard the lettering keeps out of: a mark, with the clear space around it. */
 export interface Obstacle { left: number; top: number; right: number; bottom: number }
 
-/** One drawing list feeds the live preview, the SVG exports and the PNG exports, so they cannot drift apart. */
+/**
+ * One drawing list feeds the live preview, the SVG exports and the PNG exports, so they cannot
+ * drift apart. A path layer's `opacity` is tape seen through (Ghost); a text layer's
+ * `letterSpacing` is px between its letters, the headline's tracking.
+ */
 export type Layer =
-  | { kind: 'path'; d: string; fill: string; angle: number; cx: number; cy: number; place?: Place }
-  | { kind: 'text'; text: string; x: number; y: number; size: number; weight: number; fill: string; angle: number; cx: number; cy: number; italic?: boolean }
+  | { kind: 'path'; d: string; fill: string; angle: number; cx: number; cy: number; place?: Place; opacity?: number }
+  | { kind: 'text'; text: string; x: number; y: number; size: number; weight: number; fill: string; angle: number; cx: number; cy: number; italic?: boolean; letterSpacing?: number }
 
 export interface LayerOptions {
   tone: TapeTone
@@ -53,6 +62,8 @@ export interface LayerOptions {
   weight: number
   /** The eyebrow tag's colours, where a look sets its own instead of the usual yellow tag. */
   tag?: { tape: string; text: string }
+  /** The headline's tracking, in px at its size (the tokens' −2% since 18 October 2026). The eyebrow is a tag and keeps the font's spacing. */
+  letterSpacing?: number
 }
 
 export function buildLayers(shape: ShapeResult, options: LayerOptions, fontSize: number): Layer[] {
@@ -68,8 +79,8 @@ export function buildLayers(shape: ShapeResult, options: LayerOptions, fontSize:
     const blank = !piece.line.text.trim()
     // An empty strip would be a stray stub of tape; a connected block is drawn once there is any text.
     const drawTape = tone.tape && piece.path && (shape.strips?.length ? !blank : hasText)
-    if (drawTape) layers.push({ kind: 'path', d: piece.path, fill: tone.tape as string, angle: piece.angle, cx: piece.cx, cy: piece.cy })
-    if (!blank) texts.push({ kind: 'text', text: piece.line.text, x: piece.line.x, y: piece.line.baseline, size: fontSize, weight: options.weight, fill: tone.text, angle: piece.angle, cx: piece.cx, cy: piece.cy })
+    if (drawTape) layers.push({ kind: 'path', d: piece.path, fill: tone.tape as string, angle: piece.angle, cx: piece.cx, cy: piece.cy, ...(tone.opacity !== undefined && tone.opacity < 1 ? { opacity: tone.opacity } : {}) })
+    if (!blank) texts.push({ kind: 'text', text: piece.line.text, x: piece.line.x, y: piece.line.baseline, size: fontSize, weight: options.weight, fill: tone.text, angle: piece.angle, cx: piece.cx, cy: piece.cy, ...(options.letterSpacing ? { letterSpacing: options.letterSpacing } : {}) })
   }
   if (shape.eyebrow) {
     const { eyebrow } = shape
@@ -94,18 +105,58 @@ export function layerTransform(layer: Layer) {
   return [place, turn].filter(Boolean).join(' ') || undefined
 }
 
+/** A run of see-through paths painted as one: where strips overlap, the photo shows through once, not twice. */
+export type Painted = Layer | { kind: 'group'; fill: string; opacity: number; layers: Layer[] }
+
+/** The layers as they are painted: see-through paths of one fill and opacity next to each other go down together. */
+export function paintOrder(layers: Layer[]): Painted[] {
+  const painted: Painted[] = []
+  for (const layer of layers) {
+    const opacity = layer.kind === 'path' && layer.opacity !== undefined && layer.opacity < 1 ? layer.opacity : undefined
+    const last = painted[painted.length - 1]
+    if (opacity === undefined) painted.push(layer)
+    else if (last?.kind === 'group' && last.opacity === opacity && last.fill === layer.fill) last.layers.push(layer)
+    else painted.push({ kind: 'group', fill: layer.fill, opacity, layers: [layer] })
+  }
+  return painted
+}
+
+function layerSvg(layer: Layer) {
+  const placed = layerTransform(layer)
+  const transform = placed ? ` transform="${placed}"` : ''
+  if (layer.kind === 'path') return `<path d="${layer.d}" fill="${layer.fill}"${transform}/>`
+  const slant = layer.italic ? ' font-style="italic"' : ''
+  const spacing = layer.letterSpacing ? ` letter-spacing="${layer.letterSpacing}"` : ''
+  return `<text x="${layer.x}" y="${layer.y}" font-family="${fontFamilyOf(layer.text, layer.italic)}, sans-serif" font-size="${layer.size}" font-weight="${fontWeightOf(layer.weight, layer.text, layer.italic)}"${slant}${spacing} fill="${layer.fill}"${transform}>${escapeText(layer.text)}</text>`
+}
+
 export function layersToSvg(layers: Layer[]) {
-  return layers.map((layer) => {
-    const placed = layerTransform(layer)
-    const transform = placed ? ` transform="${placed}"` : ''
-    if (layer.kind === 'path') return `<path d="${layer.d}" fill="${layer.fill}"${transform}/>`
-    const slant = layer.italic ? ' font-style="italic"' : ''
-    return `<text x="${layer.x}" y="${layer.y}" font-family="${fontFamilyOf(layer.text, layer.italic)}, sans-serif" font-size="${layer.size}" font-weight="${fontWeightOf(layer.weight, layer.text, layer.italic)}"${slant} fill="${layer.fill}"${transform}>${escapeText(layer.text)}</text>`
-  }).join('')
+  // A group's opacity composites it whole, so overlapping strips of Ghost tape don't darken twice (fill-opacity would).
+  return paintOrder(layers).map((painted) => (painted.kind === 'group' ? `<g opacity="${painted.opacity}">${painted.layers.map(layerSvg).join('')}</g>` : layerSvg(painted))).join('')
+}
+
+/** Where a path layer sits on the artboard, as a matrix: its place (a mark's) and its turn. */
+function layerMatrix(layer: Layer) {
+  let matrix = new DOMMatrix()
+  if (layer.kind === 'path' && layer.place) matrix = matrix.translate(layer.place.x, layer.place.y).scale(layer.place.scale)
+  if (layer.angle) matrix = matrix.translate(layer.cx, layer.cy).rotate(layer.angle).translate(-layer.cx, -layer.cy)
+  return matrix
 }
 
 export function drawLayers(context: CanvasRenderingContext2D, layers: Layer[]) {
-  for (const layer of layers) {
+  for (const painted of paintOrder(layers)) {
+    if (painted.kind === 'group') {
+      // One path, one fill: a pixel under two strips is painted once, as the SVG's group is composited once.
+      const path = new Path2D()
+      for (const layer of painted.layers) if (layer.kind === 'path') path.addPath(new Path2D(layer.d), layerMatrix(layer))
+      context.save()
+      context.globalAlpha *= painted.opacity
+      context.fillStyle = painted.fill
+      context.fill(path)
+      context.restore()
+      continue
+    }
+    const layer = painted
     context.save()
     if (layer.kind === 'path' && layer.place) {
       context.translate(layer.place.x, layer.place.y)
@@ -123,10 +174,36 @@ export function drawLayers(context: CanvasRenderingContext2D, layers: Layer[]) {
       context.font = fontShorthand(layer.size, layer.weight, layer.italic, layer.text)
       context.textAlign = 'start'
       context.textBaseline = 'alphabetic'
-      context.fillText(layer.text, layer.x, layer.y)
+      fillTracked(context, layer.text, layer.x, layer.y, layer.letterSpacing ?? 0)
     }
     context.restore()
   }
+}
+
+/**
+ * Draws a run with its letters `spacing` px further apart (or closer) than the font sets them.
+ * Canvas has letterSpacing in Chrome and Safari 17.4; where it is missing, each letter is drawn
+ * where the font puts it in the run so far (the text to it, less the letter), so kerning holds,
+ * plus the spacing. The SVG exports say the same with `letter-spacing`.
+ */
+export function fillTracked(context: CanvasRenderingContext2D, text: string, x: number, y: number, spacing: number) {
+  if (!spacing) {
+    context.fillText(text, x, y)
+    return
+  }
+  const tracked = context as CanvasRenderingContext2D & { letterSpacing?: string }
+  if (typeof tracked.letterSpacing === 'string') {
+    const was = tracked.letterSpacing
+    tracked.letterSpacing = `${spacing}px`
+    context.fillText(text, x, y)
+    tracked.letterSpacing = was
+    return
+  }
+  let before = ''
+  lettersOf(text).forEach((letter, index) => {
+    before += letter
+    context.fillText(letter, x + context.measureText(before).width - context.measureText(letter).width + index * spacing, y)
+  })
 }
 
 const inkOf = (shape: ShapeResult) => {

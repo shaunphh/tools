@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { EYEBROW_SCALE, FEATURE_WEIGHT, HEADLINE_WEIGHT, eyebrowSizeFor, layoutHeadline, type LayoutInput, type Measure } from './layout'
+import { EYEBROW_SCALE, FEATURE_WEIGHT, HEADLINE_TRACKING, HEADLINE_WEIGHT, eyebrowSizeFor, layoutHeadline, lettersOf, trackedBy, type LayoutInput, type Measure } from './layout'
 
 // Monospace stand-in for canvas: every character is half an em wide.
 const measure: Measure = (text, size) => ({
@@ -19,6 +19,8 @@ const input = (overrides: Partial<LayoutInput> = {}): LayoutInput => ({
   fontSize: 90,
   autoWrap: true,
   eyebrow: '',
+  // Untracked unless a test says: the sizes below were worked out letter by letter.
+  tracking: 0,
   ...overrides,
 })
 
@@ -135,5 +137,36 @@ describe('headline layout', () => {
       }
     }
     expect(cleanedUp).toBeGreaterThan(headlines.length)
+  })
+})
+
+describe('tracking', () => {
+  it('tracks cover headlines −2%, the token, between the letters only', () => {
+    expect(HEADLINE_TRACKING).toBe(-0.02)
+    expect(lettersOf('Dublin')).toHaveLength(6)
+    // A letter with its accent, and a flag: one each, as letter-spacing counts them.
+    expect(lettersOf('e\u0301🇮🇪')).toHaveLength(2)
+    expect(trackedBy('Dublin', 90, -0.02)).toBeCloseTo(-0.02 * 90 * 5, 6)
+    expect(trackedBy('D', 90, -0.02)).toBe(0)
+  })
+
+  it('wraps and fits lines by their tracked widths, and says the tracking in px', () => {
+    // 16 characters at 78px are 624px, over the 620px column untracked; tracked −2% they come in under it.
+    const text = 'aaaaaaa bbbbbbbb cccccc dddddddd eeeeeee ffffffff'
+    const untracked = layoutHeadline(input({ text, titleCase: false }), measure)
+    const tracked = layoutHeadline(input({ text, titleCase: false, tracking: -0.02 }), measure)
+    expect(untracked.fontSize).toBe(77)
+    expect(untracked.letterSpacing).toBe(0)
+    expect(tracked.fontSize).toBeGreaterThan(77)
+    expect(tracked.letterSpacing).toBeCloseTo(-0.02 * tracked.fontSize, 2)
+    tracked.labels.forEach((label, index) => expect(tracked.widths[index]).toBeCloseTo(label.length * tracked.fontSize * 0.5 + trackedBy(label, tracked.fontSize, -0.02), 6))
+    expect(tracked.widths.every((width) => width <= tracked.measureWidth)).toBe(true)
+    // The token's tracking is what the tool uses.
+    expect(layoutHeadline(input({ text, titleCase: false, tracking: undefined }), measure)).toMatchObject({ fontSize: tracked.fontSize, letterSpacing: tracked.letterSpacing })
+  })
+
+  it('leaves the eyebrow untracked, a tag like every other', () => {
+    const layout = layoutHeadline(input({ eyebrow: 'BREAKING', tracking: -0.02 }), measure)
+    expect(layout.eyebrow!.width).toBe('BREAKING'.length * layout.eyebrow!.fontSize * 0.5)
   })
 })

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { BRAND, buildLayers, getPlacement, placementRange, svgMarkup } from './artwork'
-import { GRID_CROP, POST_LOOK, TAGS, VIDEO_FRAME, VIDEO_LOOKS, frameFor, lookFor, tagFor } from './formats'
+import { GRID_CROP, PARTNER_LOOK, POST_LOOK, TAGS, VIDEO_FRAME, VIDEO_LOOKS, frameFor, lookFor, tagFor } from './formats'
 import { furnitureBoxes, furnitureObstacles } from './furniture'
 import { buildShape } from './geometry'
 import { dragPhoto, photoRect, visiblePart, CENTRED } from './photo'
@@ -90,6 +90,25 @@ describe('looks', () => {
     expect(layers.find((layer) => layer.kind === 'path' && layer.d === shape.eyebrow!.path)).toMatchObject({ fill: BRAND.light })
     expect(layers.find((layer) => layer.kind === 'text' && layer.text === 'QUICK WATCH')).toMatchObject({ fill: BRAND.dark })
     expect(lookFor('video', 'presenter')).toBe(VIDEO_LOOKS.presenter)
+  })
+
+  it('keep the look’s tag on its own tape, and give Ghost tape the usual yellow one', () => {
+    expect(tagFor('auto', VIDEO_LOOKS.report, 'yellow')).toBe(VIDEO_LOOKS.report.tag)
+    expect(tagFor('auto', VIDEO_LOOKS.presenter, 'dark')).toBe(VIDEO_LOOKS.presenter.tag)
+    // On Ghost tape a dark tag would be lost on the dark seen through, so every tag is the usual yellow one; the same with no tape.
+    for (const look of [POST_LOOK, PARTNER_LOOK, ...Object.values(VIDEO_LOOKS)]) {
+      expect(tagFor('auto', look, 'ghost')).toBeUndefined()
+      expect(tagFor('auto', look, 'none')).toBeUndefined()
+    }
+    // A chosen colour is used as it is.
+    expect(tagFor('dark', VIDEO_LOOKS.report, 'ghost')).toEqual(TAGS.dark)
+  })
+
+  it('open each look its own tape and Ghost, never another colour: light is the posts’, yellow the videos’', () => {
+    for (const look of Object.values(VIDEO_LOOKS)) expect(look.tapes).toEqual([look.treatment.tone, 'ghost'])
+    expect(VIDEO_LOOKS.report.tapes).toEqual(['yellow', 'ghost'])
+    expect(POST_LOOK.tapes).toEqual(['light', 'ghost'])
+    expect(PARTNER_LOOK.tapes).toEqual(['light', 'ghost'])
   })
 
   it('colour the tag as the look says, and as before when it says nothing', () => {

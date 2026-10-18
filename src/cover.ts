@@ -11,10 +11,12 @@ export interface CoverOptions extends Furniture {
   darken: boolean
   /** The eyebrow tag's colour. Auto is the one the cover's look gives it. */
   eyebrowColour: ColourChoice
+  /** A post set apart for a partnership or a special post: the Feature style, behind the Partner post switch (18 October 2026). Off to start with. */
+  partner: boolean
 }
 
 export const COVER_KEY = 'tape-type-cover-v1'
-export const coverDefaults: CoverOptions = { kind: 'post', page: 'cover', video: 'report', logo: 'right', logoColour: 'auto', arrow: true, arrowColour: 'auto', darken: true, eyebrowColour: 'auto' }
+export const coverDefaults: CoverOptions = { kind: 'post', page: 'cover', video: 'report', logo: 'right', logoColour: 'auto', arrow: true, arrowColour: 'auto', darken: true, eyebrowColour: 'auto', partner: false }
 
 const LOGO_SIDES: readonly LogoSide[] = ['off', 'left', 'right']
 const COLOUR_CHOICES: readonly ColourChoice[] = ['auto', 'yellow', 'light', 'dark']
@@ -33,6 +35,7 @@ export function sanitizeCover(stored: Record<string, unknown>): CoverOptions {
     arrowColour: colour(stored.arrowColour, coverDefaults.arrowColour),
     darken: flag(stored.darken, coverDefaults.darken),
     eyebrowColour: colour(stored.eyebrowColour, coverDefaults.eyebrowColour),
+    partner: flag(stored.partner, coverDefaults.partner),
   }
 }
 

@@ -4,12 +4,13 @@ import { AD_TYPE } from './adTokens'
 
 /**
  * The text block's choices that are held to the cover's look for now (a post's is black words on
- * a light block of tape, left aligned; each kind of video has its own). Every other value of
- * these stays on the page, greyed out, so people can see what is coming. To open one up again,
- * take it off this list. The line height is held too (LINE_HEIGHT), and BARRED switches off
- * single choices, such as the narrow column. Beyond the text block only
- * one thing is held, in App: the arrow takes the logo's colour. Photo, logo and the logo's
- * colour are free.
+ * a light block of tape, left aligned; each kind of video has its own; a Partner post's is the
+ * Feature style). Every other value of these stays on the page, greyed out, so people can see
+ * what is coming. To open one up again, take it off this list. A look can leave some values of a
+ * held setting open beside its own (`look.tapes`, since 18 October 2026: a post may go without
+ * tape, a video may take any house tape). The line height is held too (LINE_HEIGHT), and BARRED
+ * switches off single choices, such as the narrow column. Beyond the text block only one thing
+ * is held, in App: the arrow takes the logo's colour. Photo, logo and the logo's colour are free.
  */
 export const HELD = ['style', 'tone', 'perLine', 'align', 'coverFormat', 'hugStrength'] as const
 export type HeldSetting = (typeof HELD)[number]
@@ -36,8 +37,11 @@ export const unlocked = () => typeof location !== 'undefined' && new URLSearchPa
 const lookValue = <K extends HeldSetting>(look: Look, setting: K) =>
   (setting === 'style' ? look.style : setting === 'coverFormat' ? look.coverFormat : look.treatment[setting as 'tone' | 'perLine' | 'align' | 'hugStrength']) as GeneratorSettings[K]
 
+/** The values of a held setting the look leaves open beside its own: for now the tapes it allows. */
+const openTo = (look: Look, setting: HeldSetting): readonly unknown[] => (setting === 'tone' ? look.tapes : [])
+
 export const isLocked = <K extends HeldSetting>(setting: K, value: GeneratorSettings[K], look: Look, open = unlocked()) =>
-  !open && value !== lookValue(look, setting)
+  !open && value !== lookValue(look, setting) && !openTo(look, setting).includes(value)
 
 /** Settings saved before the locks went on, or under another look, are put back to this one. */
 export function applyLocks(settings: GeneratorSettings, look: Look, open = unlocked()): GeneratorSettings {
@@ -45,7 +49,7 @@ export function applyLocks(settings: GeneratorSettings, look: Look, open = unloc
   // A different style takes its whole treatment (strips, centring, torn ends) with it.
   let next = settings.style === look.style ? settings : { ...settings, ...look.treatment, style: look.style }
   for (const setting of HELD) {
-    if (next[setting] !== lookValue(look, setting)) next = { ...next, [setting]: lookValue(look, setting) }
+    if (isLocked(setting, next[setting], look, open)) next = { ...next, [setting]: lookValue(look, setting) }
   }
   for (const setting of Object.keys(BARRED) as BarredSetting[]) {
     if (isBarred(setting, next[setting], open)) next = { ...next, [setting]: look.treatment[setting] }

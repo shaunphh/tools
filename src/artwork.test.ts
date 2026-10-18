@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { BRAND, PHOTO_DARKEN, buildLayers, getPlacement, layersToSvg, placementRange, svgMarkup, type Layer, type LayerOptions } from './artwork'
+import { BRAND, PHOTO_DARKEN, TAPE_GHOST, buildLayers, fillTracked, getPlacement, layersToSvg, paintOrder, placementRange, svgMarkup, type Layer, type LayerOptions } from './artwork'
 import { buildShape } from './geometry'
 import { ARTBOARD_HEIGHT, ARTBOARD_WIDTH, SAFE_MARGIN, defaults, sanitizeSettings } from './settings'
 import type { GeneratorSettings, Point } from './types'
@@ -86,6 +86,57 @@ describe('layers and SVG', () => {
     expect(texts.find((layer) => layer.text === 'BREAKING')).toMatchObject({ weight: 800 })
   })
 
+  it('draws Ghost tape as the dark tape seen through, its strips painted as one so an overlap stays one layer', () => {
+    const shape = buildShape({ ...settings, perLine: true }, labels, widths, [], bounds, { eyebrow })
+    const layers = buildLayers(shape, options({ tone: 'ghost' }), 80)
+    const tapes = layers.filter((layer) => layer.kind === 'path' && layer.d !== shape.eyebrow!.path)
+    expect(tapes).toHaveLength(3)
+    expect(TAPE_GHOST).toBe(0.6)
+    expect(tapes.every((layer) => layer.kind === 'path' && layer.fill === BRAND.dark && layer.opacity === TAPE_GHOST)).toBe(true)
+    // The eyebrow's tag stays whole, the usual yellow; the lettering is light.
+    const tag = layers.find((layer) => layer.kind === 'path' && layer.d === shape.eyebrow!.path)
+    expect(tag).toMatchObject({ fill: BRAND.yellow })
+    expect(tag).not.toHaveProperty('opacity')
+    expect(layers.filter((layer) => layer.kind === 'text' && layer.text !== 'BREAKING').every((layer) => layer.fill === BRAND.white)).toBe(true)
+    const painted = paintOrder(layers)
+    expect(painted[0]).toMatchObject({ kind: 'group', fill: BRAND.dark, opacity: TAPE_GHOST })
+    expect((painted[0] as { layers: Layer[] }).layers).toHaveLength(3)
+    expect(painted.slice(1).every((entry) => entry.kind !== 'group')).toBe(true)
+    const svg = layersToSvg(layers)
+    expect(svg.match(/<g opacity="0.6">/g)).toHaveLength(1)
+    expect(svg).not.toContain('fill-opacity')
+    expect(svg.indexOf('</g>')).toBeLessThan(svg.indexOf(`d="${shape.eyebrow!.path}"`))
+    expect(layersToSvg(buildLayers(shape, options(), 80))).not.toContain('<g opacity')
+  })
+
+  it('tracks the headline’s letters as the layout says, in the layers and the SVG, and leaves the eyebrow alone', () => {
+    const shape = buildShape(settings, labels, widths, [], bounds, { eyebrow })
+    const layers = buildLayers(shape, options({ letterSpacing: -1.6 }), 80)
+    const texts = layers.filter((layer) => layer.kind === 'text')
+    expect(texts.filter((layer) => layer.text !== 'BREAKING').every((layer) => layer.kind === 'text' && layer.letterSpacing === -1.6)).toBe(true)
+    expect(texts.find((layer) => layer.text === 'BREAKING')).not.toHaveProperty('letterSpacing')
+    expect(layersToSvg(layers).match(/ letter-spacing="-1.6"/g)).toHaveLength(3)
+    expect(layersToSvg(buildLayers(shape, options(), 80))).not.toContain('letter-spacing')
+  })
+
+  it('draws tracked text letter by letter where canvas has no letterSpacing, keeping the font’s kerning', () => {
+    const drawn: [string, number][] = []
+    // T is wide, and "Ta" kerns 10 tight.
+    const advance = (text: string) => [...text].reduce((total, letter) => total + (letter === 'T' ? 50 : 40), 0) - (text.includes('Ta') ? 10 : 0)
+    const context = { measureText: (text: string) => ({ width: advance(text) }), fillText: (text: string, x: number) => { drawn.push([text, x]) } } as unknown as CanvasRenderingContext2D
+    fillTracked(context, 'Tap', 100, 0, -2)
+    expect(drawn).toEqual([['T', 100], ['a', 100 + 50 - 10 - 2], ['p', 100 + 50 - 10 + 40 - 4]])
+    // No tracking: the run as it is.
+    fillTracked(context, 'Tap', 0, 0, 0)
+    expect(drawn.at(-1)).toEqual(['Tap', 0])
+    // With letterSpacing the browser does it, and the context is left as it was found.
+    const native: [string, number][] = []
+    const withSpacing = { letterSpacing: '1px', measureText: () => ({ width: 0 }), fillText: (text: string, x: number) => { native.push([text, x]) } } as unknown as CanvasRenderingContext2D & { letterSpacing: string }
+    fillTracked(withSpacing, 'Tap', 100, 0, -2)
+    expect(native).toEqual([['Tap', 100]])
+    expect(withSpacing.letterSpacing).toBe('1px')
+  })
+
   it('paints tape before any text so strips never cover letters', () => {
     const shape = buildShape({ ...settings, perLine: true }, labels, widths, [], bounds, { eyebrow })
     const kinds = buildLayers(shape, options(), 80).map((layer) => layer.kind)
@@ -170,6 +221,7 @@ describe('settings', () => {
     expect(cleaned.column).toBe(defaults.column)
     expect(cleaned.mode).toBe('plain')
     expect(sanitizeSettings({ mode: 'torn' }).mode).toBe('torn')
+    expect(sanitizeSettings({ tone: 'ghost' }).tone).toBe('ghost')
   })
 })
 

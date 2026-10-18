@@ -1,7 +1,7 @@
 import { BRAND, type Position } from './artwork'
 import type { ColourChoice } from './furniture'
 import { POST_FRAME, SAFE_MARGIN, stylePresets, type Frame, type Treatment } from './settings'
-import type { CoverFormat, CoverStyle } from './types'
+import type { CoverFormat, CoverStyle, TapeTone } from './types'
 
 export type CoverKind = 'post' | 'video'
 export type VideoType = 'report' | 'presenter' | 'feature'
@@ -29,6 +29,13 @@ export interface Look {
   style: CoverStyle
   coverFormat: CoverFormat
   treatment: Treatment
+  /**
+   * The tapes open to the team (18 October 2026): the look's own, or Ghost, the dark tape seen
+   * through, the same on every photo. Never a free colour, and never another look's tape, since
+   * the grid reads by them: light is the posts', yellow the video covers'. The lettering follows
+   * the tape.
+   */
+  tapes: readonly TapeTone[]
   /** The tag's colours, where it isn't the usual yellow one. */
   tag?: { tape: string; text: string }
   /** The tag a cover of this kind starts with, or null for none. */
@@ -41,6 +48,8 @@ export interface Look {
 const house: Treatment = { ...stylePresets.headline, column: 'medium' }
 // Videos start in the Tape cut, its pointed ends (Shaun, 30 September 2026).
 const videoHouse: Treatment = { ...house, mode: 'tape' }
+/** A look's tapes: its own, or Ghost. */
+const withGhost = (tone: TapeTone): readonly TapeTone[] => [tone, 'ghost']
 
 /**
  * Posts: black words on a light block of tape, rough cut, left aligned. The block starts low, 90%
@@ -53,8 +62,25 @@ export const POST_LOOK: Look = {
   style: 'headline',
   coverFormat: 'regular',
   treatment: { ...house, mode: 'rough' },
+  tapes: withGhost('light'),
   eyebrow: 'Breaking',
   position: { x: 0, y: 90 },
+}
+
+/**
+ * Partner posts (18 October 2026): the Feature style, capitals on stacked torn strips, centred
+ * and slightly turned, for partnerships and special posts only, so they stand apart in a grid of
+ * posts. Behind the Partner post switch, off to start with, and it suggests a PARTNER tag.
+ */
+export const PARTNER_LOOK: Look = {
+  label: 'Partner post',
+  description: 'Capitals · torn strips',
+  style: 'feature',
+  coverFormat: 'regular',
+  treatment: stylePresets.feature,
+  tapes: withGhost('light'),
+  eyebrow: 'Partner',
+  position: { x: 50, y: 50 },
 }
 
 /** The three kinds of video, as on the cover mock-ups. */
@@ -65,6 +91,7 @@ export const VIDEO_LOOKS: Record<VideoType, Look> = {
     style: 'headline',
     coverFormat: 'regular',
     treatment: { ...videoHouse, tone: 'yellow' },
+    tapes: withGhost('yellow'),
     tag: { tape: BRAND.dark, text: BRAND.light },
     eyebrow: 'Quick watch',
     position: { x: 0, y: 100 },
@@ -75,6 +102,7 @@ export const VIDEO_LOOKS: Record<VideoType, Look> = {
     style: 'headline',
     coverFormat: 'regular',
     treatment: { ...videoHouse, tone: 'dark' },
+    tapes: withGhost('dark'),
     tag: { tape: BRAND.light, text: BRAND.dark },
     eyebrow: 'Quick guide',
     position: { x: 0, y: 0 },
@@ -85,6 +113,7 @@ export const VIDEO_LOOKS: Record<VideoType, Look> = {
     style: 'feature',
     coverFormat: 'regular',
     treatment: videoHouse,
+    tapes: withGhost('light'),
     eyebrow: null,
     position: { x: 0, y: 50 },
   },
@@ -97,9 +126,17 @@ export const TAGS: Record<Exclude<ColourChoice, 'auto'>, { tape: string; text: s
   dark: { tape: BRAND.dark, text: BRAND.light },
 }
 
-/** The tag's colours: the chosen ones, or the look's own (undefined where that is the usual yellow). */
-export const tagFor = (choice: ColourChoice, look: Look) => (choice === 'auto' ? look.tag : TAGS[choice])
+/**
+ * The tag's colours: the chosen ones; or the look's own, on the look's own tape; or undefined
+ * for the usual tag, yellow, which turns light on yellow tape. On Ghost tape (or none) every tag
+ * is the usual one: a dark tag would be lost on the dark seen through, and yellow reads.
+ */
+export function tagFor(choice: ColourChoice, look: Look, tone: TapeTone = look.treatment.tone) {
+  if (choice !== 'auto') return TAGS[choice]
+  return tone === look.treatment.tone ? look.tag : undefined
+}
 
 export const VIDEO_TYPES = Object.keys(VIDEO_LOOKS) as VideoType[]
 export const frameFor = (kind: CoverKind) => (kind === 'video' ? VIDEO_FRAME : POST_FRAME)
-export const lookFor = (kind: CoverKind, video: VideoType) => (kind === 'video' ? VIDEO_LOOKS[video] : POST_LOOK)
+/** The look of what is being made: a kind of video, a Partner post, or a post. */
+export const lookFor = (kind: CoverKind, video: VideoType, partner = false) => (kind === 'video' ? VIDEO_LOOKS[video] : partner ? PARTNER_LOOK : POST_LOOK)

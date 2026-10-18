@@ -20,12 +20,14 @@ import {
   fontFamilyOf,
   fontWeightOf,
   PHOTO_DARKEN,
+  TAPE_GHOST,
   buildLayers,
   drawLayers,
   fontShorthand,
   staticShorthand,
   getPlacement,
   layerTransform,
+  paintOrder,
   placementRange,
   svgMarkup,
   textRuns,
@@ -36,7 +38,7 @@ import {
 } from './artwork'
 import { loadCover, saveCover, type CoverOptions } from './cover'
 import { embeddedFontCss, embeddedFontCssNow, preloadEmbeddedFonts } from './fonts'
-import { GRID_CROP, VIDEO_LOOKS, VIDEO_TYPES, frameFor, lookFor, tagFor, type CoverKind, type Look, type VideoType } from './formats'
+import { GRID_CROP, PARTNER_LOOK, POST_LOOK, VIDEO_LOOKS, VIDEO_TYPES, frameFor, lookFor, tagFor, type CoverKind, type Look, type VideoType } from './formats'
 import {
   buildFurniture,
   furnitureBoxes,
@@ -106,10 +108,9 @@ const styles: { value: CoverStyle; label: string; description: string }[] = [
   { value: 'feature', label: 'Feature', description: 'All caps · torn strips' },
 ]
 
-const eyebrowSuggestions: Record<CoverKind, string[]> = {
-  post: ['Breaking', 'News', 'Exclusive', 'The Big Read'],
-  video: ['Quick watch', 'Quick guide', 'Breaking', 'News'],
-}
+/** Quick labels for the eyebrow. A Partner post's say what it is. */
+const eyebrowSuggestions = (kind: CoverKind, partner: boolean): string[] =>
+  kind === 'video' ? ['Quick watch', 'Quick guide', 'Breaking', 'News'] : partner ? ['Partner', 'In partnership', 'Sponsored', 'Special'] : ['Breaking', 'News', 'Exclusive', 'The Big Read']
 /** What is being made: the two pages of a post, or the cover of a video. */
 type Making = 'cover' | 'inside' | 'video'
 const makingOptions: { value: Making; label: string; note: string }[] = [
@@ -176,6 +177,12 @@ const colourOptions: { value: ColourChoice; label: string }[] = [
   { value: 'dark', label: 'Dark' },
 ]
 const LOCKED_NOTE = 'Switched off for now'
+/** Why a post can't take dark or yellow tape, and a video another kind's. */
+const POST_TAPE_NOTE = 'Dark and yellow tape are the video covers’: a post keeps to light tape, or Ghost'
+const VIDEO_TAPE_NOTE = 'Each kind of video keeps its own tape, or Ghost'
+/** Why the Feature style is greyed out on a post, and Headline on a Partner post. */
+const PARTNER_NOTE = 'For partnerships and special posts: switch on Partner post, under Kind of post'
+const PARTNER_ONLY_NOTE = 'A Partner post is set in the Feature style; switch Partner post off for a headline'
 const weightOptions = TYPE_WEIGHTS.map((weight) => ({ value: String(weight), label: String(weight) }))
 
 const samples = [
@@ -548,13 +555,20 @@ function Segmented<T extends string>({ label, note, value, options, disabled = f
   )
 }
 
-/** The preview draws the same layers the exports do. */
+/** One layer of the preview, drawn as the exports draw it. */
+function LayerNode({ layer }: { layer: Layer }) {
+  return layer.kind === 'path'
+    ? <path d={layer.d} fill={layer.fill} transform={layerTransform(layer)} />
+    : <text x={layer.x} y={layer.y} fill={layer.fill} fontFamily={fontFamilyOf(layer.text, layer.italic)} fontWeight={fontWeightOf(layer.weight, layer.text, layer.italic)} fontStyle={layer.italic ? 'italic' : undefined} fontSize={layer.size} letterSpacing={layer.letterSpacing} transform={layerTransform(layer)}>{layer.text}</text>
+}
+
+/** The preview draws the same layers the exports do, Ghost tape composited as one group like the SVG. */
 function LayerList({ layers }: { layers: Layer[] }) {
   return (
     <>
-      {layers.map((layer, index) => (layer.kind === 'path'
-        ? <path key={`path-${index}`} d={layer.d} fill={layer.fill} transform={layerTransform(layer)} />
-        : <text key={`text-${index}`} x={layer.x} y={layer.y} fill={layer.fill} fontFamily={fontFamilyOf(layer.text, layer.italic)} fontWeight={fontWeightOf(layer.weight, layer.text, layer.italic)} fontStyle={layer.italic ? 'italic' : undefined} fontSize={layer.size} transform={layerTransform(layer)}>{layer.text}</text>))}
+      {paintOrder(layers).map((painted, index) => (painted.kind === 'group'
+        ? <g key={`group-${index}`} opacity={painted.opacity}>{painted.layers.map((layer, inner) => <LayerNode key={inner} layer={layer} />)}</g>
+        : <LayerNode key={`layer-${index}`} layer={painted} />))}
     </>
   )
 }
@@ -617,7 +631,7 @@ const FIRST_OPENING = firstSinceHouseCut()
 function App() {
   const [cover, setCover] = useState<CoverOptions>(loadCover)
   const [settings, setSettings] = useState<GeneratorSettings>(() => {
-    const look = lookFor(cover.kind, cover.video)
+    const look = lookFor(cover.kind, cover.video, cover.partner)
     return applyLocks(withLookColumn(withHouseCut(loadSettings(), look, FIRST_OPENING), look), look)
   })
   const [history, setHistory] = useState<number[]>([settings.seed])
@@ -680,7 +694,7 @@ function App() {
     typeBaseSeen.current = typeBase
     setPageType(PAGE_TYPE)
   }, [typeBase])
-  const [position, setPosition] = useState<Position>(() => ({ x: anchorX(settings.align), y: lookFor(cover.kind, cover.video).position.y }))
+  const [position, setPosition] = useState<Position>(() => ({ x: anchorX(settings.align), y: lookFor(cover.kind, cover.video, cover.partner).position.y }))
   const [sampleOpen, setSampleOpen] = useState(false)
   const [panels, setPanels] = useState<Record<PanelId, boolean>>(loadPanels)
   const previewRef = useRef<HTMLDivElement>(null)
@@ -695,7 +709,7 @@ function App() {
   const cropRef = useRef<{ key: string; crop: Promise<string> } | null>(null)
   const locksOff = useMemo(unlocked, [])
   const frame = frameFor(cover.kind)
-  const look = lookFor(cover.kind, cover.video)
+  const look = lookFor(cover.kind, cover.video, cover.partner)
   const isInside = cover.kind === 'post' && cover.page === 'inside'
   const fileStem = cover.kind === 'video' ? 'tape-type-video-cover' : isInside ? 'tape-type-instagram-page-2' : 'tape-type-instagram'
   const fonts = useFontStatus()
@@ -716,10 +730,10 @@ function App() {
   ), [layoutSettings, layout, settings.tone])
   // The eyebrow's colour is open on video covers; a post's keeps to its look for now.
   const eyebrowOpen = locksOff || cover.kind === 'video'
-  const tag = useMemo(() => tagFor(eyebrowOpen && cover.eyebrowColour !== settings.tone ? cover.eyebrowColour : 'auto', look), [eyebrowOpen, cover.eyebrowColour, settings.tone, look])
+  const tag = useMemo(() => tagFor(eyebrowOpen && cover.eyebrowColour !== settings.tone ? cover.eyebrowColour : 'auto', look, settings.tone), [eyebrowOpen, cover.eyebrowColour, settings.tone, look])
   const layers = useMemo(
-    () => buildLayers(shape, { tone: settings.tone, background: previewBackground, weight: layout.weight, tag }, layout.fontSize),
-    [shape, settings.tone, previewBackground, layout.weight, layout.fontSize, tag],
+    () => buildLayers(shape, { tone: settings.tone, background: previewBackground, weight: layout.weight, tag, letterSpacing: layout.letterSpacing }, layout.fontSize),
+    [shape, settings.tone, previewBackground, layout.weight, layout.fontSize, layout.letterSpacing, tag],
   )
   const range = useMemo(() => placementRange(shape, frame), [shape, frame])
   const darken = cover.darken ? PHOTO_DARKEN : 0
@@ -1024,12 +1038,19 @@ function App() {
   const chooseKind = (kind: CoverKind) => {
     if (kind === cover.kind) return
     updateCover('kind', kind)
-    applyLook(lookFor(kind, cover.video))
+    applyLook(lookFor(kind, cover.video, cover.partner))
   }
 
   const chooseVideo = (video: VideoType) => {
     updateCover('video', video)
     applyLook(VIDEO_LOOKS[video])
+  }
+
+  /** Partner post on or off: the post takes the Feature look, or the house one again, keeping its words. */
+  const choosePartner = (partner: boolean) => {
+    if (partner === cover.partner) return
+    updateCover('partner', partner)
+    applyLook(lookFor('post', cover.video, partner))
   }
 
   const making: Making = cover.kind === 'video' ? 'video' : isInside ? 'inside' : 'cover'
@@ -1420,6 +1441,12 @@ function App() {
   const series = settings.coverFormat === 'series'
   const locked = settings.seedLocked
   const noTape = settings.tone === 'none'
+  const ghost = settings.tone === 'ghost'
+  // None (no tape at all) is nobody's choice: Ghost took its place on 18 October 2026. It stays for ?unlocked.
+  const tapeChoices = tones.filter((tone) => locksOff || tone.value !== 'none')
+  const tapeNote = isVideo
+    ? 'Each kind of video has its own tape, yellow the house one. Ghost is the one change for the grid: the dark tape seen through, the same on every photo.'
+    : 'Light tape is the house look for posts, yellow the video covers’. Ghost is the one change for the grid: the dark tape seen through, the same on every photo.'
   const plain = settings.mode === 'plain'
   // The seed also turns rotated strips, so Randomise stays useful then even with no cut to vary.
   const rotates = settings.perLine && settings.rotationVariance > 0
@@ -1427,15 +1454,15 @@ function App() {
   const variationNote = locked || rotates ? undefined : noTape ? 'No tape, so there is no cut to vary' : plain ? 'Plain tape has no cut to vary' : undefined
   const clash = settings.tone === 'yellow' && previewBackground === 'yellow'
     ? 'Yellow tape disappears on the Yellow background.'
-    : settings.tone === 'dark' && previewBackground === 'charcoal'
-      ? 'Dark tape disappears on the Dark background.'
+    : (settings.tone === 'dark' || ghost) && previewBackground === 'charcoal'
+      ? `${ghost ? 'Ghost' : 'Dark'} tape disappears on the Dark background.`
       : noTape && (previewBackground === 'yellow' || previewBackground === 'transparent')
         ? 'White text with no tape needs a photo or the Dark background behind it.'
         : null
   const statusMessage = blockedReason && !layout.empty
     ? blockedReason
     : layout.caseWarning
-      ? 'All caps is for Feature covers. Switch style, or retype the headline in title case.'
+      ? 'All caps is for the Feature style: Partner posts and Feature videos. Retype the headline in title case, or switch to it.'
       : series ? 'Reserved 172px recurring-series scale.' : 'Fits the approved 72–90px cover range.'
 
   const toneLabel = tones.find((tone) => tone.value === settings.tone)?.label ?? 'Light'
@@ -1501,6 +1528,19 @@ function App() {
 
       <main id="top" className="workspace">
         <aside className="controls-panel">
+          {!isVideo && !isInside && (
+            <Panel id="cover" title="Kind of post" summary={summaries.cover} open={panels.cover} onToggle={togglePanel}>
+              <label className="toggle-row spread">
+                <span>Partner post <small>{PARTNER_LOOK.description} · for partnerships and special posts</small></span>
+                <input type="checkbox" checked={cover.partner} onChange={(event) => choosePartner(event.target.checked)} />
+                <span className="switch" />
+              </label>
+              <p className="panel-note">{cover.partner
+                ? 'A Partner post stands apart in the grid: capitals on stacked torn strips, with a Partner tag. It is for partnerships and special posts only; everything else is a post.'
+                : `A post is ${POST_LOOK.description.toLocaleLowerCase()}, so the grid reads as one. Partner post is the exception, for partnerships and special posts.`}</p>
+            </Panel>
+          )}
+
           {isVideo && (
             <Panel id="cover" title="Kind of video" summary={summaries.cover} open={panels.cover} onToggle={togglePanel}>
               <div className="look-toggle" role="group" aria-label="Kind of video">
@@ -1802,7 +1842,7 @@ function App() {
                     onChange={(event) => update('eyebrow', event.target.value)}
                   />
                   <div className="chip-row">
-                    {eyebrowSuggestions[cover.kind].map((suggestion) => {
+                    {eyebrowSuggestions(cover.kind, cover.partner).map((suggestion) => {
                       const active = settings.eyebrow.trim().toLocaleLowerCase() === suggestion.toLocaleLowerCase()
                       return <button key={suggestion} aria-pressed={active} className={active ? 'active' : ''} onClick={() => update('eyebrow', suggestion)}>{suggestion}</button>
                     })}
@@ -1893,7 +1933,7 @@ function App() {
               {styles.map((style) => {
                 const off = isLocked('style', style.value, look, locksOff)
                 return (
-                  <button key={style.value} aria-pressed={settings.style === style.value} className={settings.style === style.value ? 'active' : ''} disabled={off} title={off ? LOCKED_NOTE : undefined} onClick={() => chooseStyle(style.value)}>
+                  <button key={style.value} aria-pressed={settings.style === style.value} className={settings.style === style.value ? 'active' : ''} disabled={off} title={off ? (isVideo ? LOCKED_NOTE : style.value === 'feature' ? PARTNER_NOTE : PARTNER_ONLY_NOTE) : undefined} onClick={() => chooseStyle(style.value)}>
                     <strong className={style.value === 'feature' ? 'caps' : ''}>{style.label}</strong>
                     <small>{style.description}</small>
                   </button>
@@ -1908,8 +1948,8 @@ function App() {
           </Panel>
 
           <Panel id="tape" title="Tape" summary={summaries.tape} open={panels.tape} onToggle={togglePanel}>
-            <div className="tone-row" role="radiogroup" aria-label="Tape colour">
-              {tones.map((tone) => {
+            <div className="tone-row" role="radiogroup" aria-label="Tape colour" style={{ gridTemplateColumns: `repeat(${tapeChoices.length}, 1fr)` }}>
+              {tapeChoices.map((tone) => {
                 const off = isLocked('tone', tone.value, look, locksOff)
                 return (
                   <button
@@ -1918,15 +1958,16 @@ function App() {
                     aria-checked={settings.tone === tone.value}
                     className={settings.tone === tone.value ? 'active' : ''}
                     disabled={off}
-                    title={off ? LOCKED_NOTE : undefined}
+                    title={off ? (isVideo ? VIDEO_TAPE_NOTE : POST_TAPE_NOTE) : undefined}
                     onClick={() => update('tone', tone.value)}
                   >
-                    <i className={`tone-swatch ${tone.value}`} aria-hidden="true" style={tone.tape ? { background: tone.tape, color: tone.text } : undefined}>Aa</i>
+                    <i className={`tone-swatch ${tone.value}`} aria-hidden="true" style={tone.tape && !tone.opacity ? { background: tone.tape, color: tone.text } : undefined}>Aa</i>
                     <span>{tone.label}</span>
                   </button>
                 )
               })}
             </div>
+            <p className="panel-note">{tapeNote}</p>
             {clash && <p className="tone-note" role="status">{clash}</p>}
             <div className="piece-toggle" role="group" aria-label="Tape pieces">
               {([['Block', false], ['Strips', true]] as const).map(([label, perLine]) => {
@@ -1949,6 +1990,7 @@ function App() {
                 </button>
               ))}
             </div>
+            {ghost && <p className="panel-note">Ghost tape: the photo shows through the dark tape at {Math.round(TAPE_GHOST * 100)}%, the same on every photo. Light lettering; the eyebrow keeps its yellow tape.</p>}
             {noTape && <p className="tone-note">No tape: the text sits straight on the image.</p>}
           </Panel>
 

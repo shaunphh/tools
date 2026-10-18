@@ -154,13 +154,25 @@ A video cover is one of three kinds, which set the text block:
 
 The tag's words can be changed or switched off, and the block can be dragged anywhere inside the lines. On a video cover the tag's colour is open too: **Eyebrow colour** sets it yellow, light or dark in place of the look's own, with lettering that reads on it. The tape's own colour is left out, since the tag would be lost on it, and a change of kind puts the tag back to that kind's own. On a post the choice is greyed out for now. The kinds are set out in `src/formats.ts`.
 
+Since 18 October 2026 a video cover may take **Ghost** tape in place of its kind's own (Tape colour): the dark tape seen through, the same as on posts and the one change for the grid. Its colour otherwise stays the kind's own: Shaun looked at opening it (light or dark on a Quick report) and decided against, so the grid keeps reading by it, yellow for videos and light for posts. On Ghost tape the tag is the usual yellow one, since a Quick report's dark tag would be lost on it (`tagFor` in `src/formats.ts`).
+
 ### Locked choices
 
-For now the text block keeps to the look of what is being made. A post's is black words on a light block of tape, rough cut, left aligned, starting low on the cover: 90% of the way down the room its lettering has, where it suits most photos. Each kind of video has its own (above), and all three start in the Tape cut. The other choices are greyed out rather than removed, so people can see what is coming: style, tape colour, Block or Strips, alignment and the Series format. The line height is held at 0.94 of the type size, so the Line gap slider is greyed out too. The Narrow column is switched off, so covers start in the Medium one and can go Wide; every time the tool opens it starts in Medium again, whatever column was picked last time. The tape's cling is held at 100%. The cut styles stay open, as do position, size and rotation. Beyond the text block, one thing is held: the arrow takes the logo's colour. The photo, the logo and its colour are free.
+For now the text block keeps to the look of what is being made. A post's is black words on a light block of tape, rough cut, left aligned, starting low on the cover: 90% of the way down the room its lettering has, where it suits most photos. Each kind of video has its own (above), and all three start in the Tape cut. The other choices are greyed out rather than removed, so people can see what is coming: style (on a post, open only as a Partner post, below), the tapes a look doesn't allow (each look keeps its own tape, or Ghost), Block or Strips, alignment and the Series format. The line height is held at 0.94 of the type size, so the Line gap slider is greyed out too. The Narrow column is switched off, so covers start in the Medium one and can go Wide; every time the tool opens it starts in Medium again, whatever column was picked last time. The tape's cling is held at 100%. The cut styles stay open, as do position, size and rotation. Beyond the text block, one thing is held: the arrow takes the logo's colour. The photo, the logo and its colour are free.
 
 The cut is a free choice, so it is remembered, and a change of the house cut would never reach a browser that had remembered the old one. The first time the tool opens after such a change, the cover takes the look's cut (a post's is the rough cut, a video's the tape cut); after that the choice is the person's again. For the next change, count up `HOUSE_CUT_KEY` in `src/locks.ts`.
 
-The settings that are held, and single choices that are switched off, are listed in `src/locks.ts`; take one off its list to open it up. Settings saved before the locks went on, or under another look, are put into the one in use, keeping the words. Opening the tool with `?unlocked` at the end of the address lifts every lock.
+The settings that are held, and single choices that are switched off, are listed in `src/locks.ts`; take one off its list to open it up. A look can leave some values of a held setting open beside its own (`tapes` on each look in `src/formats.ts`). Settings saved before the locks went on, or under another look, are put into the one in use, keeping the words and any tape the look leaves open. Opening the tool with `?unlocked` at the end of the address lifts every lock.
+
+### Opened on 18 October 2026
+
+Three things opened to the team, each with a guard, after Shaun looked at the Instagram grid:
+
+- **Ghost tape.** The third tape setting on posts and video covers, beside the look's own: the headline's own tape silhouette, with the same cut and padding as the light tape, filled with the dark at 60% (`tape-ghost` in the tokens, with a slider and a cover of its own on the family board) so the photo shows through, lettering light. Nothing follows the photo, no gradient or blur: the same ground on every cover, the one change for the grid. The eyebrow keeps its yellow tape (a dark tag would be lost on it), and the marks are checked against the photo as before. Strips of it are painted as one layer (an SVG group with `opacity`, one canvas fill), so where two strips overlap the photo shows through once. Dark and yellow tape stay the video covers', and no tape at all (None) is nobody's choice now: it stays in the code for `?unlocked`.
+- **Tracking.** Cover headlines are set −2% of their size: the `cover-headline` token's `letterSpacing`, which the family board has a slider for. Each line is wrapped and fitted to its column by its tracked width, so nothing that fit before runs over; the eyebrow is a tag and keeps the font's own spacing. The preview, the SVG exports (`letter-spacing`) and the PNG exports (canvas `letterSpacing`, or letter by letter where a browser lacks it, kerning kept) draw it the same.
+- **Partner post.** A switch under **Kind of post**, off to start with, with its note: for partnerships and special posts only, so they stand apart in a grid of posts. On, the post takes the Feature style, capitals on stacked torn strips, centred and slightly turned in the wide column, with a Partner tag suggested (Partner, In partnership, Sponsored, Special). Off, the Feature style stays greyed out on a post and its tip points at the switch. The look is `PARTNER_LOOK` in `src/formats.ts`; the switch is remembered with the cover's other options.
+
+Not opened: the tape's colour on video covers. It was built and taken out again the same evening, on Shaun's call: a video stays yellow, a post light, and Ghost is the one way to vary the grid.
 
 ## Cover styles
 
@@ -173,13 +185,14 @@ Every cover is set in the one weight, Barlow Bold, whatever its style or kind. (
 
 Each style remembers how it was last set up during a session, so switching to Feature and back keeps your Headline choices.
 
-Tape colours are the brand's: Light `#F0F0F0`, Dark `#101010` (white text), Yellow `#FFED1F`, or None (white text straight on the photo). The Dark background is the same brand black.
+Tape colours are the brand's: Light `#F0F0F0`, Dark `#101010` (white text), Yellow `#FFED1F`, Ghost (the dark tape seen through at 60%, `tape-ghost`, white text, the same ground on every photo; 18 Oct 2026), or None (white text straight on the photo; `?unlocked` only). The Dark background is the same brand black.
 
 An optional **eyebrow** label (Breaking, News, Exclusive, The Big Read, or any text such as a date range) sits on the first line in capitals at 34 to 41px: nine tenths of the published tags, which are about 40px (`EYEBROW_SCALE` in `src/layout.ts`; the inside page's label follows it). It is set in ExtraBold on clean-cut tape, like every AD tag: the inside label's cut, seeded from the cover and fitted to the tag, on its free end, with its foot flat on the tape. It is yellow, or white on yellow tape or a yellow background. A long label shrinks to fit the safe area, and export is blocked if it still can't.
 
 ## How the shapes work
 
 - Regular covers use a continuous 72–90px size range. Headlines start from the character count, features start at 90px; both shrink until they fit at most six lines in the chosen column, and give up a few more pixels if that saves a whole line.
+- Cover headlines are tracked −2% of their size (the shared `cover-headline` token, 18 Oct 2026). A line's ink is measured with the tracking between its letters, so wrapping and the fit to the column account for it; tags keep the font's own spacing.
 - Columns: Narrow 620px (like most published covers; switched off for now), Medium 760px (where covers start), Wide 920px.
 - Lines are balanced: the fewest lines that fit, with words spread so line lengths come out even rather than stranding one word.
 - Series covers are an explicit separate format at the reserved 172px scale and allow at most two lines.
@@ -190,9 +203,10 @@ An optional **eyebrow** label (Breaking, News, Exclusive, The Big Read, or any t
 
 ## Controls
 
+- Kind of post: the Partner post switch (the Feature style, for partnerships and special posts); kind of video: Quick report, Presenter led, Feature video
 - Style (Headline / Feature) with Reset style, title case, automatic or manual line breaks
 - Eyebrow on/off, text and quick labels
-- Block or strips, tape colour, tape cling (82–116%; above 100% crops slightly into the glyph bounds), line gap, rotation variance 0–2° for strips
+- Block or strips, tape colour (the look's own tape, or Ghost), tape cling (82–116%; above 100% crops slightly into the glyph bounds), line gap, rotation variance 0–2° for strips
 - Cut style: Plain, Torn, Clean cut, Tape, Cling, Rough cut (Randomise is off for Plain and for no tape, where there is no cut to vary)
 - Alignment, Top / Middle / Bottom position, column width, regular or series format, automatic or manual size
 - Drag (or arrow keys, Shift for bigger steps) to position the artwork. All lettering stays inside the 80px safe area; the tape and eyebrow tag may reach into the margin. On phones, vertical swipes scroll the page and height is set with Top / Middle / Bottom.

@@ -12,6 +12,15 @@ export const FEATURE_WEIGHT = AD_TYPE.coverHeadline.weight
 /** Every AD tag (eyebrows, labels, date strips, time tags) is ExtraBold capitals on clean-cut tape (2 Oct 2026). */
 export const EYEBROW_WEIGHT = AD_TYPE.eyebrow.weight
 export const weightFor = (style: CoverStyle) => (style === 'feature' ? FEATURE_WEIGHT : HEADLINE_WEIGHT)
+/** Cover headlines are tracked a touch tight, −2% of the size: the tokens' cover-headline letterSpacing (18 October 2026). */
+export const HEADLINE_TRACKING = AD_TYPE.coverHeadline.tracking
+/** The letters of a run as letter-spacing counts them: graphemes, so a letter with its accent, or a flag, is one. */
+export const lettersOf = (text: string): string[] => ('Segmenter' in Intl ? Array.from(new Intl.Segmenter().segment(text), (segment) => segment.segment) : Array.from(text))
+/** What tracking adds to a line's ink (less than nothing when tight): between the letters, not after the last. */
+export function trackedBy(text: string, size: number, tracking: number) {
+  const between = lettersOf(text).length - 1
+  return between > 0 ? tracking * size * between : 0
+}
 
 const MIN_SIZE = 72
 const MAX_SIZE = AD_TYPE.coverHeadline.size
@@ -36,6 +45,8 @@ export interface LayoutInput {
   autoWrap: boolean
   /** Normalised eyebrow text, or '' when the eyebrow is off. */
   eyebrow: string
+  /** Tracking as a share of the size: the token's (HEADLINE_TRACKING) unless given. */
+  tracking?: number
 }
 
 export interface HeadlineLayout {
@@ -54,12 +65,20 @@ export interface HeadlineLayout {
   overflow: OverflowReason | null
   empty: boolean
   eyebrow?: EyebrowMetrics
+  /** The tracking as drawn: letter-spacing in px at fontSize, 0 for none. */
+  letterSpacing: number
 }
 
 /** Sizes, wraps and checks a headline (and its eyebrow) against the brand rules. Pure, so it can be tested with a fake measure. */
 export function layoutHeadline(input: LayoutInput, measure: Measure): HeadlineLayout {
   const caps = input.style === 'feature'
   const weight = weightFor(input.style)
+  const tracking = input.tracking ?? HEADLINE_TRACKING
+  // Tracking is between the letters, so lines are wrapped and fitted by their tracked widths. The eyebrow is a tag, never tracked.
+  const measureLine: Measure = (value, size, lineWeight) => {
+    const ink = measure(value, size, lineWeight)
+    return tracking ? { ...ink, width: Math.max(1, ink.width + trackedBy(value, size, tracking)) } : ink
+  }
   const series = input.coverFormat === 'series'
   const maxLines = series ? 2 : 6
   const measureWidth = series ? TEXT_AREA_WIDTH : columnWidth(input.column)
@@ -71,12 +90,12 @@ export function layoutHeadline(input: LayoutInput, measure: Measure): HeadlineLa
   const wrapAt = (size: number, balance: boolean) => wrapText(
     text || ' ',
     measureWidth,
-    (value) => measure(value, size, weight).width,
+    (value) => measureLine(value, size, weight).width,
     input.autoWrap,
     { balance, avoidStart },
   )
   const fits = (lines: string[], size: number) =>
-    lines.length <= maxLines && lines.every((line) => measure(line, size, weight).width <= measureWidth)
+    lines.length <= maxLines && lines.every((line) => measureLine(line, size, weight).width <= measureWidth)
 
   let fontSize: number
   if (series) {
@@ -111,7 +130,7 @@ export function layoutHeadline(input: LayoutInput, measure: Measure): HeadlineLa
       }
     }
   }
-  const metrics = labels.map((label) => measure(label, fontSize, weight))
+  const metrics = labels.map((label) => measureLine(label, fontSize, weight))
   // Capitals have no descenders, so feature strips are balanced on cap height rather than on "g/j".
   const reference = measure(caps ? 'H' : 'Hgj', fontSize, weight)
   const ascent = Math.max(reference.ascent || fontSize * 0.72, ...metrics.map((metric) => metric.ascent))
@@ -155,5 +174,6 @@ export function layoutHeadline(input: LayoutInput, measure: Measure): HeadlineLa
     overflow,
     empty: !text,
     eyebrow,
+    letterSpacing: Math.round(tracking * fontSize * 100) / 100,
   }
 }

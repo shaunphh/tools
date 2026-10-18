@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { coverDefaults, sanitizeCover } from './cover'
-import { POST_LOOK, VIDEO_LOOKS } from './formats'
+import { PARTNER_LOOK, POST_LOOK, VIDEO_LOOKS, lookFor } from './formats'
 import { HELD, HOUSE_CUT_KEY, applyLocks, firstSinceHouseCut, isBarred, isLocked, withHouseCut, withLookColumn } from './locks'
 import { defaults, stylePresets } from './settings'
 import type { GeneratorSettings } from './types'
@@ -11,6 +11,9 @@ describe('locked choices', () => {
     expect(isLocked('style', 'headline', POST_LOOK, false)).toBe(false)
     expect((['dark', 'yellow', 'none'] as const).every((tone) => isLocked('tone', tone, POST_LOOK, false))).toBe(true)
     expect(isLocked('tone', 'light', POST_LOOK, false)).toBe(false)
+    // Ghost, the dark tape seen through, is a post's one other tape (18 October 2026).
+    expect(isLocked('tone', 'ghost', POST_LOOK, false)).toBe(false)
+    expect(POST_LOOK.tapes).toEqual(['light', 'ghost'])
     expect(isLocked('perLine', true, POST_LOOK, false)).toBe(true)
     expect(isLocked('perLine', false, POST_LOOK, false)).toBe(false)
     expect(isLocked('align', 'center', POST_LOOK, false)).toBe(true)
@@ -61,11 +64,17 @@ describe('locked choices', () => {
     expect(applyLocks(defaults, POST_LOOK, false)).toEqual({ ...defaults, column: 'medium' })
   })
 
-  it('holds each kind of video to its own look', () => {
+  it('holds each kind of video to its own tape, or Ghost', () => {
     expect(isLocked('tone', 'yellow', VIDEO_LOOKS.report, false)).toBe(false)
     expect(isLocked('tone', 'light', VIDEO_LOOKS.report, false)).toBe(true)
     expect(isLocked('tone', 'dark', VIDEO_LOOKS.presenter, false)).toBe(false)
     expect(isLocked('tone', 'yellow', VIDEO_LOOKS.presenter, false)).toBe(true)
+    // Ghost, the dark tape seen through, is the one change on a video cover too (18 October 2026): no other colour.
+    for (const look of Object.values(VIDEO_LOOKS)) {
+      expect(look.tapes).toEqual([look.treatment.tone, 'ghost'])
+      expect(isLocked('tone', 'ghost', look, false)).toBe(false)
+      expect(isLocked('tone', 'none', look, false)).toBe(true)
+    }
     expect(isLocked('style', 'feature', VIDEO_LOOKS.feature, false)).toBe(false)
     expect(isLocked('style', 'headline', VIDEO_LOOKS.feature, false)).toBe(true)
     for (const look of Object.values(VIDEO_LOOKS)) {
@@ -83,12 +92,32 @@ describe('locked choices', () => {
     expect(applyLocks(cut, POST_LOOK, false)).toMatchObject({ mode: 'torn', align: 'left', perLine: false, column: 'wide' })
   })
 
-  it('puts settings saved under another look into the one in use', () => {
+  it('puts settings saved under another look into the one in use, keeping a tape the look leaves open', () => {
     const post: GeneratorSettings = { ...defaults, mode: 'torn', headline: 'Kept' }
     expect(applyLocks(post, VIDEO_LOOKS.report, false)).toMatchObject({ tone: 'yellow', style: 'headline', mode: 'torn', headline: 'Kept' })
     expect(applyLocks(post, VIDEO_LOOKS.feature, false)).toMatchObject({ style: 'feature', tone: 'light', perLine: false, align: 'left' })
     const report = applyLocks(post, VIDEO_LOOKS.report, false)
     expect(applyLocks(report, POST_LOOK, false)).toMatchObject({ tone: 'light', mode: 'torn' })
+    // Ghost is every look's, so it is kept; no tape at all is nobody's now, so it goes back to the look's own.
+    expect(applyLocks({ ...post, tone: 'ghost' }, VIDEO_LOOKS.report, false).tone).toBe('ghost')
+    expect(applyLocks({ ...post, tone: 'ghost' }, POST_LOOK, false).tone).toBe('ghost')
+    expect(applyLocks({ ...post, tone: 'none' }, POST_LOOK, false).tone).toBe('light')
+  })
+
+  it('opens the Feature style to a post only as a Partner post, which keeps to a post’s tapes', () => {
+    expect(lookFor('post', 'report', true)).toBe(PARTNER_LOOK)
+    expect(lookFor('post', 'report')).toBe(POST_LOOK)
+    expect(lookFor('video', 'report', true)).toBe(VIDEO_LOOKS.report)
+    expect(PARTNER_LOOK).toMatchObject({ label: 'Partner post', style: 'feature', eyebrow: 'Partner', tapes: POST_LOOK.tapes, position: { x: 50, y: 50 } })
+    expect(PARTNER_LOOK.treatment).toEqual(stylePresets.feature)
+    expect(isLocked('style', 'feature', PARTNER_LOOK, false)).toBe(false)
+    expect(isLocked('style', 'headline', PARTNER_LOOK, false)).toBe(true)
+    expect(isLocked('style', 'feature', POST_LOOK, false)).toBe(true)
+    expect(isLocked('tone', 'ghost', PARTNER_LOOK, false)).toBe(false)
+    expect(isLocked('tone', 'yellow', PARTNER_LOOK, false)).toBe(true)
+    expect(isLocked('tone', 'none', PARTNER_LOOK, false)).toBe(true)
+    // A post saved as a headline opens as a Partner post in the Feature look, words kept.
+    expect(applyLocks({ ...defaults, headline: 'Kept' }, PARTNER_LOOK, false)).toMatchObject({ ...stylePresets.feature, style: 'feature', headline: 'Kept' })
   })
 
   it('switches off the narrow column, and moves covers saved in it to the medium one', () => {
@@ -114,12 +143,12 @@ describe('locked choices', () => {
 
 describe('cover options', () => {
   it('start as a post with the logo, the swipe arrow and a darkened photo, colours picked automatically', () => {
-    expect(coverDefaults).toEqual({ kind: 'post', page: 'cover', video: 'report', logo: 'right', logoColour: 'auto', arrow: true, arrowColour: 'auto', darken: true, eyebrowColour: 'auto' })
+    expect(coverDefaults).toEqual({ kind: 'post', page: 'cover', video: 'report', logo: 'right', logoColour: 'auto', arrow: true, arrowColour: 'auto', darken: true, eyebrowColour: 'auto', partner: false })
   })
 
   it('replaces invalid stored values instead of trusting them', () => {
-    expect(sanitizeCover({ kind: 'story', page: 'back', video: 'vlog', logo: 'middle', logoColour: 'pink', arrow: 'yes', arrowColour: 7, darken: 0, eyebrowColour: 'green' })).toEqual(coverDefaults)
-    const chosen = { kind: 'video', page: 'inside', video: 'presenter', logo: 'left', logoColour: 'light', arrow: false, arrowColour: 'dark', darken: false, eyebrowColour: 'yellow' }
+    expect(sanitizeCover({ kind: 'story', page: 'back', video: 'vlog', logo: 'middle', logoColour: 'pink', arrow: 'yes', arrowColour: 7, darken: 0, eyebrowColour: 'green', partner: 'yes' })).toEqual(coverDefaults)
+    const chosen = { kind: 'video', page: 'inside', video: 'presenter', logo: 'left', logoColour: 'light', arrow: false, arrowColour: 'dark', darken: false, eyebrowColour: 'yellow', partner: true }
     expect(sanitizeCover(chosen)).toEqual(chosen)
     expect(sanitizeCover({})).toEqual(coverDefaults)
   })
