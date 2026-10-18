@@ -12,7 +12,7 @@ import { AD_TYPE } from '@ad/tape/adTokens'
  * switches off single choices, such as the narrow column. Beyond the text block only one thing
  * is held, in App: the arrow takes the logo's colour. Photo, logo and the logo's colour are free.
  */
-export const HELD = ['style', 'tone', 'perLine', 'align', 'coverFormat', 'hugStrength'] as const
+export const HELD = ['style', 'tone', 'perLine', 'align', 'coverFormat', 'hugStrength', 'rotationVariance'] as const
 export type HeldSetting = (typeof HELD)[number]
 
 /** Single choices that are switched off for now, whatever is being made. The others of each stay open. */
@@ -35,7 +35,7 @@ export const lockedLineGap = (fontSize: number, letterHeight: number) => fontSiz
 export const unlocked = () => typeof location !== 'undefined' && new URLSearchParams(location.search).has('unlocked')
 
 const lookValue = <K extends HeldSetting>(look: Look, setting: K) =>
-  (setting === 'style' ? look.style : setting === 'coverFormat' ? look.coverFormat : look.treatment[setting as 'tone' | 'perLine' | 'align' | 'hugStrength']) as GeneratorSettings[K]
+  (setting === 'style' ? look.style : setting === 'coverFormat' ? look.coverFormat : look.treatment[setting as 'tone' | 'perLine' | 'align' | 'hugStrength' | 'rotationVariance']) as GeneratorSettings[K]
 
 /** The values of a held setting the look leaves open beside its own: for now the tapes it allows. */
 const openTo = (look: Look, setting: HeldSetting): readonly unknown[] => (setting === 'tone' ? look.tapes : [])
@@ -54,6 +54,8 @@ export function applyLocks(settings: GeneratorSettings, look: Look, open = unloc
   for (const setting of Object.keys(BARRED) as BarredSetting[]) {
     if (isBarred(setting, next[setting], open)) next = { ...next, [setting]: look.treatment[setting] }
   }
+  // The type size is the fit's (19 October 2026): a chosen size is a design session's.
+  if (!next.autoSize) next = { ...next, autoSize: true }
   return next
 }
 

@@ -2001,12 +2001,12 @@ function App() {
               <Segmented label="Format" value={settings.coverFormat} options={formatOptions} locked={(format) => isLocked('coverFormat', format, look, locksOff)} onChange={(format) => update('coverFormat', format)} />
               {!series && (
                 <>
-                  <label className="toggle-row auto-size-toggle">
+                  <label className="toggle-row auto-size-toggle" title={locksOff ? undefined : `${LOCKED_NOTE}: the size is the fit's`}>
                     <span>Auto size</span>
-                    <input type="checkbox" checked={settings.autoSize} onChange={(event) => setAutoSize(event.target.checked)} />
+                    <input type="checkbox" checked={settings.autoSize} disabled={!locksOff} onChange={(event) => setAutoSize(event.target.checked)} />
                     <span className="ad-switch__track" />
                   </label>
-                  <RangeField label="Cover size" value={settings.autoSize ? layout.fontSize : settings.fontSize} min={72} max={90} suffix="px" disabled={settings.autoSize} onChange={(value) => update('fontSize', value)} />
+                  <RangeField label="Cover size" value={settings.autoSize ? layout.fontSize : settings.fontSize} min={72} max={90} suffix="px" disabled={settings.autoSize || !locksOff} title={locksOff ? undefined : LOCKED_NOTE} onChange={(value) => update('fontSize', value)} />
                 </>
               )}
             </div>
@@ -2018,7 +2018,7 @@ function App() {
               {locksOff
                 ? <RangeField label="Line gap" value={settings.lineGap} min={-8} max={20} suffix="px" onChange={(value) => update('lineGap', value)} />
                 : <RangeField label="Line gap" value={Math.max(-8, Math.min(20, layoutSettings.lineGap))} min={-8} max={20} disabled title={`${LOCKED_NOTE}: lines are set ${LINE_HEIGHT} of the type size apart`} format={() => `Line height ${LINE_HEIGHT}`} onChange={() => undefined} />}
-              <RangeField label="Rotation variance" value={settings.rotationVariance} min={0} max={2} step={0.1} disabled={!settings.perLine} format={(value) => `${value.toFixed(1)}°`} onChange={(value) => update('rotationVariance', value)} />
+              <RangeField label="Rotation variance" value={settings.rotationVariance} min={0} max={2} step={0.1} disabled={!settings.perLine || !locksOff} title={locksOff ? undefined : LOCKED_NOTE} format={(value) => `${value.toFixed(1)}°`} onChange={(value) => update('rotationVariance', value)} />
             </div>
           </Panel>
           </>}
