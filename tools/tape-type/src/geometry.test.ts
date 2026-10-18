@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { buildShape, coverSizeFromCharacters, hasSelfIntersection, wrapText } from './geometry'
-import type { GeneratorSettings } from './types'
+import { buildShape, coverSizeFromCharacters, hasSelfIntersection, wrapText } from '@ad/tape/geometry'
+import type { GeneratorSettings } from '@ad/tape/types'
 
 const base: GeneratorSettings = {
   headline: '', style: 'headline', titleCase: true, tone: 'light', eyebrowEnabled: false, eyebrow: '',

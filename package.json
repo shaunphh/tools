@@ -1,0 +1,21 @@
+{
+  "name": "alternative-dublin-tools",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "tools/*"
+  ],
+  "scripts": {
+    "prepare": "npm run vendor -w tools/event-guide",
+    "test": "npm test --workspaces --if-present",
+    "build": "node scripts/build-site.mjs",
+    "dev:event-guide": "npx -y serve tools/event-guide -l 5181",
+    "dev:guide-studio": "npm run dev -w tools/guide-studio",
+    "dev:tape-type": "npm run dev -w tools/tape-type"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "esbuild": "^0.25.0"
+  }
+}

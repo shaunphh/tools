@@ -1,9 +1,9 @@
-import { EYEBROW_PADDING, coverSizeFromCharacters, wrapText } from './geometry'
+import { EYEBROW_PADDING, coverSizeFromCharacters, wrapText } from '@ad/tape/geometry'
 import type { InkMetrics } from './metrics'
-import { TEXT_AREA_WIDTH, columnWidth } from './settings'
+import { TEXT_AREA_WIDTH, columnWidth } from '@ad/tape/settings'
 import { startsLowercase } from './text'
-import type { ColumnWidth, CoverFormat, CoverStyle, EyebrowMetrics } from './types'
-import { AD_TYPE } from './adTokens'
+import type { ColumnWidth, CoverFormat, CoverStyle, EyebrowMetrics } from '@ad/tape/types'
+import { AD_TYPE } from '@ad/tape/adTokens'
 
 // Every cover is set in Barlow Bold: one weight across posts, videos and both styles. (The
 // published feature covers measured as Black: stems 0.27 of the cap height, where Bold is 0.20.)

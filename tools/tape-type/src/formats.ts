@@ -1,7 +1,7 @@
 import { BRAND, type Position } from './artwork'
 import type { ColourChoice } from './furniture'
-import { POST_FRAME, SAFE_MARGIN, stylePresets, type Frame, type Treatment } from './settings'
-import type { CoverFormat, CoverStyle, TapeTone } from './types'
+import { POST_FRAME, SAFE_MARGIN, stylePresets, type Frame, type Treatment } from '@ad/tape/settings'
+import type { CoverFormat, CoverStyle, TapeTone } from '@ad/tape/types'
 
 export type CoverKind = 'post' | 'video'
 export type VideoType = 'report' | 'presenter' | 'feature'

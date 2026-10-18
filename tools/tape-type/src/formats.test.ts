@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest'
 import { BRAND, buildLayers, getPlacement, placementRange, svgMarkup } from './artwork'
 import { GRID_CROP, PARTNER_LOOK, POST_LOOK, TAGS, VIDEO_FRAME, VIDEO_LOOKS, frameFor, lookFor, tagFor } from './formats'
 import { furnitureBoxes, furnitureObstacles } from './furniture'
-import { buildShape } from './geometry'
-import { dragPhoto, photoRect, visiblePart, CENTRED } from './photo'
-import { POST_FRAME, SAFE_MARGIN, defaults } from './settings'
+import { buildShape } from '@ad/tape/geometry'
+import { dragPhoto, photoRect, visiblePart, CENTRED } from '@ad/tape/photo'
+import { POST_FRAME, SAFE_MARGIN, defaults } from '@ad/tape/settings'
 
 const bounds = { ascent: 62, descent: 17 }
 const eyebrow = { text: 'QUICK WATCH', fontSize: 40, width: 230, originOffset: -2, capHeight: 28 }

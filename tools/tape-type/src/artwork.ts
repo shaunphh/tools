@@ -1,9 +1,9 @@
-import { gxCovers, nearestStatic, stemOf } from './barlow'
-import { POST_FRAME, type Frame } from './settings'
+import { gxCovers, nearestStatic, stemOf } from '@ad/tape/barlow'
+import { POST_FRAME, type Frame } from '@ad/tape/settings'
 import { EYEBROW_WEIGHT, lettersOf } from './layout'
 import { cleanText } from './text'
-import type { ShapeResult, TapeTone } from './types'
-import { AD_COLOR, AD_PHOTO_DARKEN, AD_TAPE_GHOST } from './adTokens'
+import type { ShapeResult, TapeTone } from '@ad/tape/types'
+import { AD_COLOR, AD_PHOTO_DARKEN, AD_TAPE_GHOST } from '@ad/tape/adTokens'
 
 /** Static Barlow (Fontsource): italics, and any run with a letter the variable font lacks. */
 export const FONT_FAMILY = 'Barlow'

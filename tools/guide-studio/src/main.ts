@@ -6,7 +6,7 @@ import { HEIGHT, WIDTH, asset, coverFrames, fillPreviewText, loadFonts, loadedIm
 import { zipFiles } from './zip'
 import { loadSheet, parseSheetLink, saveSheetLink, savedSheetLink } from './sheet'
 import { clampBounds, dragBounds, type CoverBounds } from './cover-bounds'
-import { dragPhoto } from './tape/photo'
+import { dragPhoto } from '@ad/tape/photo'
 
 const app = document.querySelector<HTMLDivElement>('#app')!
 const escape = (s: unknown) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[c]!)

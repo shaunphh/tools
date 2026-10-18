@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { buildShape } from './geometry'
-import { defaults } from './settings'
-import type { GeneratorSettings, Point } from './types'
+import { buildShape } from '@ad/tape/geometry'
+import { defaults } from '@ad/tape/settings'
+import type { GeneratorSettings, Point } from '@ad/tape/types'
 
 // Cuts that only add (18 Oct 2026): with `cutOutside` a tag's tape keeps its padding whole on every seed,
 // whatever the cut. Feature padding is 0.3em at the sides and 0.2em above and below (geometry.ts).

@@ -1,7 +1,7 @@
 import { mapHeaders, normalizeRows, rowsFromCsv } from './event-source.js'
 import { crc32 } from './zip'
 import { readBounds, type CoverBounds } from './cover-bounds'
-import { adNumber, adStyle, adValue } from './adTokens'
+import { adNumber, adStyle, adValue } from '@ad/tape/adTokens'
 
 export type Series = 'picks' | 'new'
 export type Crop = { x: number; y: number; zoom: number }

@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { coverDefaults, sanitizeCover } from './cover'
 import { PARTNER_LOOK, POST_LOOK, VIDEO_LOOKS, lookFor } from './formats'
 import { HELD, HOUSE_CUT_KEY, applyLocks, firstSinceHouseCut, isBarred, isLocked, withHouseCut, withLookColumn } from './locks'
-import { defaults, stylePresets } from './settings'
-import type { GeneratorSettings } from './types'
+import { defaults, stylePresets } from '@ad/tape/settings'
+import type { GeneratorSettings } from '@ad/tape/types'
 
 describe('locked choices', () => {
   it('holds a post to the one house look, and leaves the cut styles open', () => {
@@ -157,7 +157,7 @@ describe('cover options', () => {
 describe('line height', () => {
   it('sets lines 0.94 of the type size apart, whatever the letters measure', async () => {
     const { LINE_HEIGHT, lockedLineGap } = await import('./locks')
-    const { buildShape } = await import('./geometry')
+    const { buildShape } = await import('@ad/tape/geometry')
     expect(LINE_HEIGHT).toBe(0.94)
     const cases = [
       { fontSize: 76, bounds: { ascent: 54, descent: 15 }, style: 'headline' as const },

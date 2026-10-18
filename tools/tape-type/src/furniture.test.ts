@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { BRAND, getPlacement, type Layer } from './artwork'
 import { ARROW_WIDTH, LOGO_WIDTH, READS_FROM, buildFurniture, contrast, furnitureBoxes, furnitureObstacles, luminanceOf, settleColour, type ColourChoice } from './furniture'
-import { buildShape } from './geometry'
-import { ARTBOARD_HEIGHT, ARTBOARD_WIDTH, SAFE_MARGIN, defaults } from './settings'
+import { buildShape } from '@ad/tape/geometry'
+import { ARTBOARD_HEIGHT, ARTBOARD_WIDTH, SAFE_MARGIN, defaults } from '@ad/tape/settings'
 
 const both = { logo: 'right', arrow: true } as const
 const yellow = { logo: 'yellow', arrow: 'yellow' } as const

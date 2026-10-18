@@ -2,9 +2,9 @@ import labelSample from './assets/samples/label-page.jpg'
 import titleSample from './assets/samples/title-page.jpg'
 import { EXAMPLE, PAGE_KINDS, PAGE_KIND_NAMES, isTemplateKey, readWords, type PageKind, type PageStart, type PageWords } from './inside'
 import { commitFiles, type FileChange } from './github'
-import { CENTRED, clampView, type PhotoView } from './photo'
+import { CENTRED, clampView, type PhotoView } from '@ad/tape/photo'
 import { slugOf, templateDocument, templateText } from './templateFile.mjs'
-import type { ShapeMode } from './types'
+import type { ShapeMode } from '@ad/tape/types'
 
 export { slugOf }
 

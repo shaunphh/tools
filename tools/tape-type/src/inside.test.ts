@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
 import { BRAND, type Layer } from './artwork'
 import { furnitureBoxes } from './furniture'
-import { wrapText } from './geometry'
+import { wrapText } from '@ad/tape/geometry'
 import { BODY, DETAILS, FILL_SMALLEST, TONES, IMAGE_HEIGHTS, INSIDE_MARKS, LABEL, PAGE_MARGIN, PAGE_TYPE, SEMI, STRONG, TEXT_WIDTH, TITLE, insideDefaults, insideSvg, layoutInside, EXAMPLE, PAGE_KINDS, pictureAt, readLines, readWords, sameWords, startFrom, sanitizeInside, switchKind, type MeasureInk, type MeasureWidth, type Run } from './inside'
-import { POST_FRAME } from './settings'
+import { POST_FRAME } from '@ad/tape/settings'
 
 // A stand-in for canvas: every character is half an em wide.
 const measure: MeasureWidth = (text, size) => text.length * size * 0.5

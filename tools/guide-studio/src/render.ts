@@ -1,9 +1,9 @@
-import { buildShape } from './tape/geometry'
-import { defaults } from './tape/settings'
-import { photoRect } from './tape/photo'
+import { buildShape } from '@ad/tape/geometry'
+import { defaults } from '@ad/tape/settings'
+import { photoRect } from '@ad/tape/photo'
 import type { CoverBounds } from './cover-bounds'
-import { gxCovers, nearestStatic, stemOf } from './barlow'
-import { adNumber, adStyle, nearestCssWeight } from './adTokens'
+import { gxCovers, nearestStatic, stemOf } from '@ad/tape/barlow'
+import { adNumber, adStyle, nearestCssWeight } from '@ad/tape/adTokens'
 import { META_GREY, coverLook, coverPhoto, designUnlocked, handlesOf, pictureHeight, wordCount, type Brand, type Crop, type Issue, type Story } from './model'
 
 export const WIDTH = 1080, HEIGHT = 1350

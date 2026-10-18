@@ -1,13 +1,13 @@
 import { BRAND, buildLayers, drawLayers, escapeAttribute, layersToSvg, type Layer } from './artwork'
 import type { Box, ColourChoice, LogoSide } from './furniture'
-import { buildShape, wrapText } from './geometry'
+import { buildShape, wrapText } from '@ad/tape/geometry'
 import { lockedLineGap } from './locks'
 import type { InkMetrics } from './metrics'
-import { photoRect, type PhotoView } from './photo'
-import { POST_FRAME, defaults } from './settings'
+import { photoRect, type PhotoView } from '@ad/tape/photo'
+import { POST_FRAME, defaults } from '@ad/tape/settings'
 import { cleanText, normaliseEyebrow, normaliseHeadline } from './text'
-import type { GeneratorSettings, ShapeMode } from './types'
-import { AD_COLOR, AD_SIZE, AD_SPACE, AD_TYPE } from './adTokens'
+import type { GeneratorSettings, ShapeMode } from '@ad/tape/types'
+import { AD_COLOR, AD_SIZE, AD_SPACE, AD_TYPE } from '@ad/tape/adTokens'
 
 /**
  * The inside page of a post: a picture, a tape label, a title, the story, then the details

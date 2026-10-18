@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { BRAND, PHOTO_DARKEN, TAPE_GHOST, buildLayers, fillTracked, getPlacement, layersToSvg, paintOrder, placementRange, svgMarkup, type Layer, type LayerOptions } from './artwork'
-import { buildShape } from './geometry'
-import { ARTBOARD_HEIGHT, ARTBOARD_WIDTH, SAFE_MARGIN, defaults, sanitizeSettings } from './settings'
-import type { GeneratorSettings, Point } from './types'
+import { buildShape } from '@ad/tape/geometry'
+import { ARTBOARD_HEIGHT, ARTBOARD_WIDTH, SAFE_MARGIN, defaults, sanitizeSettings } from '@ad/tape/settings'
+import type { GeneratorSettings, Point } from '@ad/tape/types'
 
 const settings: GeneratorSettings = { ...defaults, seed: 11 }
 const labels = ['How to Make the', 'Most of a Weekend', 'Visit to Dublin']

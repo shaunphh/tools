@@ -50,7 +50,7 @@ import {
   type LogoSide,
   type Ruling,
 } from './furniture'
-import { buildShape, nextSeed } from './geometry'
+import { buildShape, nextSeed } from '@ad/tape/geometry'
 import { EYEBROW_WEIGHT, layoutHeadline, weightFor, type HeadlineLayout, type Measure } from './layout'
 import { LINE_HEIGHT, applyLocks, firstSinceHouseCut, isBarred, isLocked, lockedLineGap, unlocked, withHouseCut, withLookColumn } from './locks'
 import {
@@ -88,7 +88,7 @@ import { NEW_KEY_URL, REPOSITORY, loadKey, storeKey } from './github'
 import { TEMPLATES, pictureOf, publishTemplate, removeTemplate, saveTemplate, slugOf, templateFor, unpublishTemplate, withPublished, type PageTemplate, type Published } from './templates'
 import { TYPE_RANGE, TYPE_WEIGHTS, WEIGHT_NAMES, describePageType, isLocal, loadPageType, sameType, savePageType } from './pageType'
 import { measureInk } from './metrics'
-import { CENTRED, MAX_ZOOM, dragPhoto, photoRect, photoSlack, visiblePart, type PhotoView } from './photo'
+import { CENTRED, MAX_ZOOM, dragPhoto, photoRect, photoSlack, visiblePart, type PhotoView } from '@ad/tape/photo'
 import {
   POST_FRAME,
   TEXT_AREA_WIDTH,
@@ -99,9 +99,9 @@ import {
   saveSettings,
   stylePresets,
   type Treatment,
-} from './settings'
+} from '@ad/tape/settings'
 import { displayText, isAllCaps, normaliseEyebrow, normaliseHeadline } from './text'
-import type { CoverStyle, GeneratorSettings, ShapeMode, TextAlign } from './types'
+import type { CoverStyle, GeneratorSettings, ShapeMode, TextAlign } from '@ad/tape/types'
 
 const styles: { value: CoverStyle; label: string; description: string }[] = [
   { value: 'headline', label: 'Headline', description: 'Title Case · block or strips' },

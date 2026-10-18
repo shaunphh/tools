@@ -1,6 +1,6 @@
 import type { Look } from './formats'
-import type { GeneratorSettings } from './types'
-import { AD_TYPE } from './adTokens'
+import type { GeneratorSettings } from '@ad/tape/types'
+import { AD_TYPE } from '@ad/tape/adTokens'
 
 /**
  * The text block's choices that are held to the cover's look for now (a post's is black words on

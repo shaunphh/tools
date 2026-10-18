@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import tokens from './ad-tokens.json'
-import { AD_COLOR, AD_SIZE, AD_SPACE, AD_TYPE, adNumber, adStyle, nearestCssWeight, toolWeight } from './adTokens'
+import tokens from '@ad/tape/ad-tokens.json'
+import { AD_COLOR, AD_SIZE, AD_SPACE, AD_TYPE, adNumber, adStyle, nearestCssWeight, toolWeight } from '@ad/tape/adTokens'
 
 describe('the shared AD tokens', () => {
   it('hold the values decided on 2 October 2026', () => {

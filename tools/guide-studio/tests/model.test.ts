@@ -5,7 +5,7 @@ import { gvizTable, parseSheetLink } from '../src/sheet'
 import { clampBounds, dragBounds } from '../src/cover-bounds'
 import { coverFrames } from '../src/render'
 import { crc32, zipFiles } from '../src/zip'
-import { gxCovers, nearestStatic, stemOf } from '../src/barlow'
+import { gxCovers, nearestStatic, stemOf } from '@ad/tape/barlow'
 
 describe('house rules for inside pages', () => {
   it('keeps every picture at the house height unless designs are open, without losing a saved height', () => {

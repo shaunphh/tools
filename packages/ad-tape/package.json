@@ -1,0 +1,8 @@
+{
+  "name": "@ad/tape",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "What every Alternative Dublin tool shares: the tape geometry and its settings, the design tokens (src/ad-tokens.json) and how the tools read them. Imported as @ad/tape/<module> through each tool's alias; the Event Guide bundles it with scripts/vendor.mjs.",
+  "exports": { "./*": "./src/*.ts", "./ad-tokens.json": "./src/ad-tokens.json" }
+}

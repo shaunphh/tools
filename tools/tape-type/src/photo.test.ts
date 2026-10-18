@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { CENTRED, MAX_ZOOM, clampView, dragPhoto, photoRect, photoSlack, visiblePart } from './photo'
-import { ARTBOARD_HEIGHT, ARTBOARD_WIDTH } from './settings'
+import { CENTRED, MAX_ZOOM, clampView, dragPhoto, photoRect, photoSlack, visiblePart } from '@ad/tape/photo'
+import { ARTBOARD_HEIGHT, ARTBOARD_WIDTH } from '@ad/tape/settings'
 
 const photos = [
   { width: 3000, height: 2000 }, // landscape
