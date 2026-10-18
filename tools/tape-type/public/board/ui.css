@@ -68,13 +68,17 @@
 
 /* Segmented control and chips */
 .ad-segmented { display: inline-flex; padding: 3px; gap: 2px; border: 1px solid var(--ad-ui-line, #d6d6cf); border-radius: var(--ad-ui-radius, 6px); background: #eceee6; }
-.ad-segmented--full { display: flex; }
+.ad-segmented--full { display: flex; flex-wrap: wrap; }
+.ad-segmented--full button { flex: 1 1 auto; min-width: 0; }
 .ad-segmented button { flex: 1; min-height: 28px; padding: 0 10px; border: 0; border-radius: 4px; background: transparent; color: var(--ad-ui-muted, #74746d); font: inherit; font-size: var(--ad-ui-size-small, 12px); font-weight: 600; white-space: nowrap; cursor: pointer; }
 .ad-segmented button:hover { color: var(--ad-ui-ink, #1f201c); }
 .ad-segmented button.active, .ad-segmented button[aria-pressed="true"], .ad-segmented input:checked + span { background: #fff; color: var(--ad-ui-ink, #1f201c); box-shadow: 0 1px 3px rgba(0,0,0,.08); }
 .ad-segmented button:disabled { opacity: .35; cursor: default; }
 .ad-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 28px; padding: 0 11px; border: 1px solid var(--ad-ui-line, #d6d6cf); border-radius: 999px; background: #fff; color: var(--ad-ui-ink, #1f201c); font: inherit; font-size: var(--ad-ui-size-small, 12px); font-weight: 600; cursor: pointer; }
-.ad-chip.active, .ad-chip[aria-pressed="true"] { background: var(--ad-ui-chrome, #101010); border-color: var(--ad-ui-chrome, #101010); color: var(--ad-ui-chrome-ink, #f0f0f0); }
+.ad-chip.active, .ad-chip[aria-pressed="true"], .ad-chip:has(input:checked) { background: var(--ad-ui-chrome, #101010); border-color: var(--ad-ui-chrome, #101010); color: var(--ad-ui-chrome-ink, #f0f0f0); }
+.ad-chip input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.ad-chip:has(input:focus-visible) { outline: 2px solid var(--ad-ui-action, #ffed1f); outline-offset: 2px; }
+.ad-chip em { font-style: normal; font-weight: 400; opacity: .7; }
 .ad-chips { display: flex; flex-wrap: wrap; gap: 7px; }
 
 /* Surfaces */
@@ -120,3 +124,10 @@
 @keyframes ad-toast-in { from { opacity: 0; bottom: 16px } to { opacity: 1; bottom: 24px } }
 @media (max-width: 670px) { .ad-dialog__head, .ad-dialog__body, .ad-dialog__foot { padding-left: 20px; padding-right: 20px; } .ad-toast { width: calc(100% - 32px); } }
 @media (prefers-reduced-motion: reduce) { .ad-btn, .ad-switch__track, .ad-switch__track::after, .ad-toast { transition: none; animation: none; } }
+
+/* In the masthead (dark) the kit's quiet and link buttons read light */
+.ad-masthead .ad-btn--quiet, .ad-masthead .ad-btn--link { color: var(--ad-ui-chrome-ink, #f0f0f0); }
+.ad-masthead .ad-btn--quiet:hover, .ad-masthead .ad-btn--quiet.active, .ad-masthead .ad-btn--quiet.selected { background: #262626; }
+.ad-masthead .ad-muted, .ad-masthead .ad-hint { color: var(--ad-ui-chrome-muted, #c2c2c2); }
+.ad-masthead select { background: transparent; border: 0; color: var(--ad-ui-chrome-muted, #c2c2c2); font: inherit; font-size: var(--ad-ui-size-small, 12px); }
+.ad-masthead select option { color: #111; }
