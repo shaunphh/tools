@@ -1,0 +1,283 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+
+import {
+  assessDateRange,
+  filenameForPage,
+  formatBadgeTime,
+  formatDateHeading,
+  formatFooterDate,
+  groupEventsByDay,
+  gvizTableToRows,
+  normalizeRows,
+  offTheListing,
+  parseCsv,
+  rowsFromCsv,
+  validatePagination,
+} from "../core.js";
+
+test("CSV parser handles commas, newlines, and escaped quotes", () => {
+  const rows = parseCsv('DATE,NAME,LOCATION\n02/10,"A, B","The ""Big"" Room"\n');
+  assert.deepEqual(rows, [
+    ["DATE", "NAME", "LOCATION"],
+    ["02/10", "A, B", 'The "Big" Room'],
+  ]);
+});
+
+test("real Sheet-shaped CSV skips weekday banners and normalizes approved events", () => {
+  const csv = [
+    "DATE,NAME,LOCATION,START TIME,EVENT/TICKETS LINK,Instagram Link,Approved,TOP PICKS",
+    "MONDAY (6),,,,,,,",
+    "02/10,Casual Choir,Whelan's,8:00 PM,Ticket text,savagesingingsessions,TRUE,TRUE",
+    ",A carried-date event,Temple Bar,9:00 PM,https://example.com,@example,TRUE,FALSE",
+    "02/11,Not approved,Somewhere,6:00 PM,,,FALSE,FALSE",
+  ].join("\n");
+
+  const result = normalizeRows(rowsFromCsv(csv), { now: new Date(2026, 8, 8) });
+  assert.equal(result.rowsFound, 3);
+  assert.equal(result.events.length, 2);
+  assert.equal(result.ignored.length, 1);
+  assert.deepEqual(result.ignored[0], {
+    sourceRow: 5,
+    title: "Not approved",
+    reason: "not approved",
+  });
+  assert.equal(result.events[0].dateKey, "2025-02-10");
+  assert.equal(result.events[1].dateKey, "2025-02-10");
+  assert.equal(result.events[1].dateInferred, true);
+  assert.equal(result.events[0].instagram, "@savagesingingsessions");
+  assert.equal(result.events[0].url, "");
+  assert.equal(result.events[1].url, "https://example.com/");
+  assert.equal(formatDateHeading(result.events[0].date), "MONDAY 10 FEB");
+});
+
+test("handles typed with a full-width at sign come out as plain @handles", () => {
+  const csv = [
+    "DATE,NAME,LOCATION,START TIME,Instagram Link,Approved",
+    "02/10,Pottery night,Dublin,7:00 PM,＠potterydublin,TRUE",
+    "02/10,Second,Dublin,8:00 PM,@＠workmansclub,TRUE",
+  ].join("\n");
+  const result = normalizeRows(rowsFromCsv(csv), { now: new Date(2026, 8, 8) });
+  assert.equal(result.events[0].instagram, "@potterydublin");
+  assert.equal(result.events[1].instagram, "@workmansclub");
+});
+
+test("GViz conversion retains typed event year and formatted time", () => {
+  const table = gvizTableToRows({
+    status: "ok",
+    table: {
+      cols: [
+        { id: "A", label: "DATE", type: "date" },
+        { id: "B", label: "NAME", type: "string" },
+        { id: "C", label: "START TIME", type: "datetime" },
+        { id: "D", label: "Approved", type: "boolean" },
+      ],
+      rows: [
+        {
+          c: [
+            { v: "Date(2025,1,10)", f: "02/10" },
+            { v: "Exhibition Slow Look" },
+            { v: "Date(1899,11,30,11,30,0)", f: "11:30 AM" },
+            { v: true, f: "TRUE" },
+          ],
+        },
+      ],
+    },
+  });
+  const result = normalizeRows(table);
+  assert.equal(result.events[0].dateKey, "2025-02-10");
+  assert.equal(result.events[0].time, "11:30 AM");
+});
+
+test("new weekly tab layout infers the blank date column and carries weekday dates", () => {
+  const csv = [
+    " ,NAME,LOCATION,START TIME,Instagram name,Approved,19 TOP PICKS",
+    "CLICK HERE FOR EVENT FINDING RESOURCES,,,,,,",
+    '"Mon, 14 Sep",Monday,,,,,',
+    ",Fresh Pasta Making Workshop,Coopers Cross,11:00 AM,@theitalian_pastaproject,TRUE,FALSE",
+    ",Guided Abbey Tour,Meetinghouse Lane,12:30 PM,@cd_heritage,TRUE,TRUE",
+    '"Tue, 15 Sep",Tuesday,,,,,',
+    ",Tuesday Event,Temple Bar,6:00 PM,@example,TRUE,FALSE",
+  ].join("\n");
+
+  const result = normalizeRows(rowsFromCsv(csv), { now: new Date(2026, 8, 9, 12) });
+  assert.equal(result.schema.date, 0);
+  assert.equal(result.rowsFound, 4);
+  assert.equal(result.events.length, 3);
+  assert.equal(result.ignored.length, 1);
+  assert.equal(result.events[0].dateKey, "2026-09-14");
+  assert.equal(result.events[0].dateInferred, true);
+  assert.equal(result.events[1].dateKey, "2026-09-14");
+  assert.equal(result.events[2].dateKey, "2026-09-15");
+});
+
+test("weekday separator rows may contain generated checkbox and Canva values", () => {
+  const csv = [
+    " ,START TIME,NAME,LOCATION,Approved,TOP PICKS,Canva Graphic",
+    '"Mon, 14 Sep",,Monday,,,,',
+    ",11:00 AM,Monday Event,Venue A,TRUE,FALSE,",
+    '"Tue, 15 Sep",,Tuesday,,FALSE,FALSE,": Tuesday generated copy"',
+    ",7:00 PM,Tuesday Event,Venue B,TRUE,FALSE,",
+  ].join("\n");
+
+  const result = normalizeRows(rowsFromCsv(csv), { now: new Date(2026, 8, 11, 12) });
+  assert.equal(result.rowsFound, 2);
+  assert.equal(result.events.length, 2);
+  assert.equal(result.ignored.length, 0);
+  assert.deepEqual(
+    result.events.map((event) => event.dateKey),
+    ["2026-09-14", "2026-09-15"],
+  );
+});
+
+test("a weekday date starts a new section when the separate weekday cell is blank", () => {
+  const csv = [
+    " ,NAME,LOCATION,START TIME,Instagram name,Approved,19 TOP PICKS,Canva Graphic",
+    '"Fri, 25 Sep",Friday,,,,TRUE,FALSE,',
+    ",Friday Event,Venue A,7:00 PM,@friday,TRUE,FALSE,",
+    '"Sat, 26 Sep",,,,,TRUE,FALSE,": generated empty copy"',
+    ",Saturday Event,Venue B,8:00 PM,@saturday,TRUE,FALSE,",
+    '"Sun, 27 Sep",Sunday,,,,TRUE,FALSE,',
+    ",Sunday Event,Venue C,9:00 PM,@sunday,TRUE,FALSE,",
+  ].join("\n");
+
+  const result = normalizeRows(rowsFromCsv(csv), { now: new Date(2026, 8, 18, 12) });
+  assert.equal(result.events.length, 3);
+  assert.equal(result.ignored.length, 0);
+  assert.deepEqual(
+    result.events.map((event) => event.dateKey),
+    ["2026-09-25", "2026-09-26", "2026-09-27"],
+  );
+});
+
+test("new weekly GViz layout retains the typed year from a weekday separator row", () => {
+  const table = gvizTableToRows({
+    status: "ok",
+    table: {
+      cols: [
+        { id: "A", label: "", type: "date" },
+        { id: "B", label: "NAME", type: "string" },
+        { id: "C", label: "LOCATION", type: "string" },
+        { id: "D", label: "START TIME", type: "datetime" },
+        { id: "E", label: "Approved", type: "boolean" },
+      ],
+      rows: [
+        {
+          c: [
+            { v: "Date(2026,8,14)", f: "Mon, 14 Sep" },
+            { v: "Monday" },
+            null,
+            null,
+            { v: false, f: "FALSE" },
+          ],
+        },
+        {
+          c: [
+            null,
+            { v: "Fresh Pasta Making Workshop" },
+            { v: "Coopers Cross" },
+            { v: "Date(1899,11,30,11,0,0)", f: "11:00 AM" },
+            { v: true, f: "TRUE" },
+          ],
+        },
+        {
+          c: [
+            { v: "Date(2026,8,26)", f: "Sat, 26 Sep" },
+            null,
+            null,
+            null,
+            { v: true, f: "TRUE" },
+          ],
+        },
+        {
+          c: [
+            null,
+            { v: "Saturday Event" },
+            { v: "Venue B" },
+            { v: "Date(1899,11,30,20,0,0)", f: "8:00 PM" },
+            { v: true, f: "TRUE" },
+          ],
+        },
+      ],
+    },
+  });
+
+  const result = normalizeRows(table, { now: new Date(2026, 8, 9, 12) });
+  assert.equal(result.schema.date, 0);
+  assert.equal(result.events.length, 2);
+  assert.equal(result.events[0].dateKey, "2026-09-14");
+  assert.equal(result.events[0].time, "11:00 AM");
+  assert.equal(result.events[1].dateKey, "2026-09-26");
+  assert.equal(result.events[1].time, "8:00 PM");
+});
+
+test("rows are all included when an Approved column is absent", () => {
+  const result = normalizeRows(
+    rowsFromCsv("Date,Title,Venue,Time\n2026-09-07,One,Venue A,18:00\n2026-09-08,Two,Venue B,19:00"),
+  );
+  assert.equal(result.events.length, 2);
+  assert.equal(result.ignored.length, 0);
+  assert.equal(groupEventsByDay(result.events).length, 2);
+});
+
+test("pagination audit catches missing and duplicate event ids", () => {
+  const events = [{ id: "one" }, { id: "two" }, { id: "three" }];
+  const good = validatePagination(events, [
+    { events: [events[0], events[1]] },
+    { events: [events[2]] },
+  ]);
+  assert.equal(good.passed, true);
+  assert.equal(good.rendered, 3);
+
+  const bad = validatePagination(events, [{ events: [events[0], events[0], events[2]] }]);
+  assert.equal(bad.passed, false);
+  assert.deepEqual(bad.missing, ["two"]);
+  assert.deepEqual(bad.duplicates, ["one"]);
+});
+
+test("filenames are padded and day-based", () => {
+  assert.equal(filenameForPage(0, 17, "MONDAY"), "01-monday.png");
+  assert.equal(filenameForPage(16, 17, "TUESDAY"), "17-tuesday.png");
+});
+
+test("guide display formatting matches the compact Figma labels", () => {
+  const monday = new Date(2025, 1, 10, 12);
+  assert.equal(formatFooterDate(monday), "Mon 10 Feb");
+  assert.equal(formatBadgeTime("11:30 AM"), "11:30");
+  assert.equal(formatBadgeTime("8:00 PM"), "20:00");
+  assert.equal(formatBadgeTime("9:00 AM"), "9:00");
+  assert.equal(formatBadgeTime("12 AM"), "0:00");
+  assert.equal(formatBadgeTime("TBC"), "TBC");
+});
+
+test("date-range safeguard flags stale weeks but allows a current week", () => {
+  const now = new Date(2026, 8, 9, 12);
+  const stale = assessDateRange(
+    [new Date(2025, 1, 10), new Date(2025, 1, 16)].map((date) => ({ date })),
+    now,
+  );
+  assert.equal(stale.requiresConfirmation, true);
+  assert.equal(stale.label, "10–16 Feb 2025");
+  assert.match(stale.reason, /past/);
+
+  const current = assessDateRange(
+    [new Date(2026, 8, 8), new Date(2026, 8, 14)].map((date) => ({ date })),
+    now,
+  );
+  assert.equal(current.requiresConfirmation, false);
+});
+
+test("a cancelled or postponed event stays out of the guide; sold out still goes in", () => {
+  const csv = [
+    "DATE,NAME,LOCATION,START TIME,Instagram name,Approved,TOP PICKS,STATUS",
+    "FRIDAY (9),,,,,,,",
+    "10/09,Havana Roots,The Grand Social,19:30,thegrandsocialdublin,TRUE,FALSE,",
+    "10/09,Tuft Your Own Rug,Dublin Tufting,18:00,tuftingdublin,TRUE,FALSE,Cancelled",
+    "10/09,Arthur's Jazz Jam,Arthur's Pub,20:00,arthursbluesjazz,TRUE,FALSE,Postponed",
+    "10/09,Big Gig,Vicar Street,20:00,vicarstreetdublin,TRUE,FALSE,Sold out",
+  ].join("\n");
+  const result = normalizeRows(rowsFromCsv(csv), { now: new Date(2026, 9, 5) });
+  assert.deepEqual(result.events.map((event) => event.title), ["Havana Roots", "Big Gig"]);
+  assert.deepEqual(result.ignored.map((row) => [row.title, row.reason]), [["Tuft Your Own Rug", "cancelled"], ["Arthur's Jazz Jam", "postponed"]]);
+  assert.deepEqual(["Cancelled", "canceled", "CANCELLED - moving to Nov", "Postponed", "Sold out", "", undefined].map(offTheListing), ["cancelled", "cancelled", "cancelled", "postponed", "", "", ""]);
+});
