@@ -22,11 +22,15 @@
     "paths": {
       "@ad/tape/*": [
         "../../packages/ad-tape/src/*"
+      ],
+      "@ad/shell/*": [
+        "../../packages/ad-shell/*"
       ]
     }
   },
   "include": [
     "src",
-    "../../packages/ad-tape/src"
+    "../../packages/ad-tape/src",
+    "../../packages/ad-shell"
   ]
 }

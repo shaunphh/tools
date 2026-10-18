@@ -9,7 +9,7 @@ import { STEMS } from './barlow'
 
 interface Token { name: string; value: string }
 interface Style { name: string; family?: string; fontSize: string; lineHeight: number | string; letterSpacing?: string; fontWeight: number }
-type Family = 'color' | 'spacing' | 'size' | 'weight' | 'opacity' | 'tape'
+type Family = 'color' | 'spacing' | 'size' | 'weight' | 'opacity' | 'tape' | 'ui'
 
 /** A token's value as written in the file. */
 export function adValue(family: Family, name: string) {

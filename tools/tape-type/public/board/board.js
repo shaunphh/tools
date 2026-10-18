@@ -29,6 +29,7 @@ function controlsFrom(tokens) {
   tokens.spacing.tokens.forEach((t) => out.push({ group: 'Space', label: t.name, name: `--ad-${t.name}`, kind: 'range', value: parseFloat(t.value), unit: 'px', min: 0, max: Math.max(100, Math.round(parseFloat(t.value) * 2)), step: 1, path: ['spacing', t.name, 'value'] }))
   tokens.size.tokens.forEach((t) => out.push({ group: 'Sizes', label: t.name, name: `--ad-${t.name}`, kind: 'range', value: parseFloat(t.value), unit: 'px', min: 0, max: Math.max(100, Math.round(parseFloat(t.value) * 2)), step: 1, path: ['size', t.name, 'value'] }))
   tokens.opacity.tokens.forEach((t) => out.push({ group: 'Opacity', label: t.name, name: `--ad-${t.name}`, kind: 'range', value: parseFloat(t.value), unit: '', min: 0, max: 1, step: .01, path: ['opacity', t.name, 'value'] }))
+  ;(tokens.ui?.tokens ?? []).forEach((t) => out.push(t.value.startsWith('#') ? { group: 'Chrome', label: t.name, name: `--ad-ui-${t.name}`, kind: 'color', value: t.value, path: ['ui', t.name, 'value'] } : { group: 'Chrome', label: t.name, name: `--ad-ui-${t.name}`, kind: 'range', value: parseFloat(t.value), unit: 'px', min: 0, max: Math.max(24, Math.round(parseFloat(t.value) * 2)), step: 1, path: ['ui', t.name, 'value'] }))
   tokens.weight.tokens.forEach((t) => out.push({ group: 'Weights', label: t.name, name: `--ad-weight-${t.name}`, kind: 'range', value: parseFloat(t.value), unit: '', min: 22, max: 188, step: 1, path: ['weight', t.name, 'value'] }))
   return out.map((c) => ({ ...c, initial: c.value }))
 }

@@ -18,7 +18,7 @@
         "src/assets/swipe-arrow.svg"
       ]
     },
-    "synced": "2026-10-18",
+    "synced": "2026-10-19",
     "about": "The values every Alternative Dublin tool shares. Tape Type keeps this file; the event guide, Guide Studio and Good Eye copy it with their sync scripts. Change a value here, then sync each tool. Decided by Shaun on 2 October 2026."
   },
   "color": {
@@ -405,6 +405,80 @@
         "name": "cut-video",
         "value": "tape",
         "usage": "Video covers start with the Tape cut."
+      }
+    ]
+  },
+  "ui": {
+    "tokens": [
+      {
+        "name": "chrome",
+        "value": "#101010",
+        "usage": "The tools' masthead and any dark chrome: the brand's `dark`, the one ground every tool starts with (the Event Guide's since 2 October 2026; Guide Studio and Tape Type came to it on 19 October)."
+      },
+      {
+        "name": "chrome-ink",
+        "value": "#f0f0f0",
+        "usage": "Lettering on the masthead: the brand's `light`."
+      },
+      {
+        "name": "chrome-muted",
+        "value": "#c2c2c2",
+        "usage": "Second-rank lettering on the masthead (the other tools in the switcher, notes): `grey-on-dark`."
+      },
+      {
+        "name": "action",
+        "value": "#ffed1f",
+        "usage": "The one yellow in a tool's chrome, for the one action that matters on a screen (Export, Save to team): the brand yellow. Until 19 October 2026 the three tools had three yellows (#f6cf24, #fff418 and this)."
+      },
+      {
+        "name": "workspace",
+        "value": "#e8e8e3",
+        "usage": "The ground the pages sit on in every tool."
+      },
+      {
+        "name": "panel",
+        "value": "#fbfbf7",
+        "usage": "Panels, rails and inspectors beside the workspace."
+      },
+      {
+        "name": "line",
+        "value": "#d6d6cf",
+        "usage": "Hairlines between panels and around controls."
+      },
+      {
+        "name": "ink",
+        "value": "#1f201c",
+        "usage": "Text in panels and controls."
+      },
+      {
+        "name": "muted",
+        "value": "#74746d",
+        "usage": "Second-rank text in panels: hints, counts, notes (4.6:1 on `panel`)."
+      },
+      {
+        "name": "radius",
+        "value": "6px",
+        "usage": "Corners on buttons, fields and dialogs."
+      },
+      {
+        "name": "control",
+        "value": "36px",
+        "usage": "The height of a button or a field in the chrome."
+      },
+      {
+        "name": "masthead",
+        "value": "64px",
+        "usage": "The masthead's height on a desktop (78, 84 and 56 across the tools until 19 October 2026)."
+      },
+      {
+        "name": "ui-size",
+        "value": "14px",
+        "usage": "Chrome text: Barlow at 14px, 600 for labels and buttons, 400 for notes."
+      },
+      {
+        "name": "ui-label-size",
+        "value": "11px",
+        "usage": "Small capitals in the chrome (rail headings, eyebrows): Barlow Condensed 700 at 11px with .1em tracking."
       }
     ]
   }

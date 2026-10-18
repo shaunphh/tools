@@ -10,14 +10,14 @@
 :root {
   font-family: 'Barlow', Arial, sans-serif;
   color: #202020;
-  background: #e9e7e1;
+  background: var(--ad-ui-workspace, #e8e8e3);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
-  --ink: #202020;
-  --paper: #f5f3ee;
-  --line: #d7d4cc;
-  --yellow: #fff418;
-  --muted: #6e6c66;
+  --ink: var(--ad-ui-ink, #1f201c);
+  --paper: var(--ad-ui-panel, #fbfbf7);
+  --line: var(--ad-ui-line, #d6d6cf);
+  --yellow: var(--ad-ui-action, #ffed1f);
+  --muted: var(--ad-ui-muted, #74746d);
   --panel-x: 26px;
   --stage-x: 24px;
 }

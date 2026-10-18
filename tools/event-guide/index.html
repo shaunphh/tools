@@ -16,6 +16,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="vendor/ad-tokens.css" />
+    <link rel="stylesheet" href="vendor/shell.css" />
     <link rel="stylesheet" href="styles.css" />
     <script
       defer
@@ -25,14 +26,13 @@
     <script type="module" src="app.js"></script>
   </head>
   <body>
-    <header class="app-header">
-      <a class="app-brand" href="#top" aria-label="Alternative Dublin Event Guide Generator">
-        <span class="app-brand__mark" aria-hidden="true">AD</span>
-        <span>
-          <strong>Alternative Dublin</strong>
-          <small>Event Guide Generator</small>
-        </span>
-      </a>
+    <!-- The shell every AD tool wears (packages/ad-shell): the same markup shell.ts writes for the other tools. -->
+    <header class="ad-masthead">
+      <a class="ad-masthead__home" href="../" aria-label="Alternative Dublin tools"><span class="ad-masthead__mark">Alternative Dublin</span><span class="ad-masthead__tools">Tools</span></a>
+      <nav class="ad-masthead__switch" aria-label="Tools"><a href="../event-guide/" aria-current="page">Event Guide</a><a href="../guide-studio/">Guide Studio</a><a href="../tape-type/">Tape Type</a><a href="../tape-type/board/">Board</a></nav>
+      <h1 class="visually-hidden">Event Guide: the week's events as Instagram pages</h1>
+      <div class="ad-masthead__tool"><p class="ad-masthead__note">The week's events from the Sheet, laid out as day pages</p></div>
+      <div class="ad-masthead__actions"></div>
     </header>
 
     <main id="top" class="workspace">

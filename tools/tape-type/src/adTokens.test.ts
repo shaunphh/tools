@@ -36,7 +36,7 @@ describe('the shared AD tokens', () => {
   // The same file is the design system page's tokens.json, which reads lists, one name each.
   it('keep the design system page format: lists of named tokens, every name once, colours as hex', () => {
     const families = Object.entries(tokens).filter(([key, family]) => key !== 'type' && typeof family === 'object' && family !== null && 'tokens' in family)
-    expect(families.map(([key]) => key)).toEqual(['color', 'spacing', 'size', 'weight', 'opacity', 'tape'])
+    expect(families.map(([key]) => key)).toEqual(['color', 'spacing', 'size', 'weight', 'opacity', 'tape', 'ui'])
     const names = families.flatMap(([, family]) => (family as { tokens: { name: string }[] }).tokens.map((token) => token.name))
     expect(new Set(names).size).toBe(names.length)
     for (const name of names) expect(name).toMatch(/^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$/)

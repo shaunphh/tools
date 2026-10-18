@@ -6,6 +6,6 @@ import { defineConfig } from 'vite'
 // way, the dev server stays at the root. @ad/tape is the shared package, read as source.
 export default defineConfig(({ command, isPreview }) => ({
   base: command === 'build' || isPreview ? process.env.BASE_PATH ?? '/guide-studio/' : '/',
-  resolve: { alias: { '@ad/tape': fileURLToPath(new URL('../../packages/ad-tape/src', import.meta.url)) } },
+  resolve: { alias: { '@ad/tape': fileURLToPath(new URL('../../packages/ad-tape/src', import.meta.url)), '@ad/shell': fileURLToPath(new URL('../../packages/ad-shell', import.meta.url)) } },
   server: { host: '127.0.0.1', port: 5193, strictPort: true, fs: { allow: ['../..'] } },
 }))

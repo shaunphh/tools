@@ -1,3 +1,4 @@
+import { masthead } from '@ad/shell/shell'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   ArrowLeft,
@@ -1513,18 +1514,8 @@ function App() {
 
   return (
     <div className="app-shell">
-      <header className="topbar">
-        <a className="brand" href="#top" aria-label="Tape Type home">
-          <span className="brand-mark"><span>T</span></span>
-          <span>Tape Type</span>
-        </a>
-        <h1 className="visually-hidden">Tape Type: covers, inside pages and video covers for Alternative Dublin</h1>
-        <p className="topbar-tagline">Controlled tape geometry built around your headline — never a rotated rectangle.</p>
-        <div className="topbar-meta">
-          <span className="status-dot" />
-          Nothing leaves your browser
-        </div>
-      </header>
+      {/* The shell every AD tool wears (packages/ad-shell): the masthead's markup comes from shell.ts. */}
+      <div dangerouslySetInnerHTML={{ __html: masthead('tape-type', { title: 'Tape Type: covers, inside pages and video covers for Alternative Dublin', tool: '<p class="ad-masthead__note">Covers, inside pages and video covers · nothing leaves your browser</p>' }) }} />
 
       <main id="top" className="workspace">
         <aside className="controls-panel">

@@ -29,17 +29,17 @@
 :root {
   --ink: #151512;
   --ink-soft: #34342f;
-  --paper: #f2f1eb;
-  --panel: #fbfaf5;
-  --canvas: #e5e4de;
-  --line: #d1d0c8;
+  --paper: var(--ad-ui-workspace, #e8e8e3);
+  --panel: var(--ad-ui-panel, #fbfbf7);
+  --canvas: var(--ad-ui-workspace, #e8e8e3);
+  --line: var(--ad-ui-line, #d6d6cf);
   --line-dark: #393936;
-  --yellow: #f6cf24;
+  --yellow: var(--ad-ui-action, #ffed1f);
   --yellow-dark: #d9b400;
   --success: #087856;
   --error: #b33b29;
   --white: #ffffff;
-  --muted: #74746d;
+  --muted: var(--ad-ui-muted, #74746d);
   --shadow: 0 18px 50px rgba(22, 22, 18, 0.13);
 
   /* Edit these tokens to tune the fixed guide; app.js reads the same values for export. */
@@ -221,7 +221,7 @@ button:disabled {
 .workspace {
   display: grid;
   grid-template-columns: minmax(320px, 386px) minmax(0, 1fr);
-  min-height: calc(100vh - 78px);
+  min-height: calc(100vh - var(--ad-ui-masthead, 64px));
 }
 
 .controls {
@@ -1268,7 +1268,7 @@ body.is-exporting #export-all {
 @media (min-width: 1180px) {
   .controls {
     position: sticky;
-    top: 78px;
+    top: var(--ad-ui-masthead, 64px);
     max-height: calc(100vh - 78px);
     overflow-y: auto;
   }

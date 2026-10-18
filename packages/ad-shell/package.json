@@ -1,0 +1,1 @@
+{ "name": "@ad/shell", "version": "1.0.0", "private": true, "type": "module", "description": "The masthead and chrome every Alternative Dublin tool shares: shell.css and shell.ts (masthead markup, the ui tokens as custom properties).", "exports": { "./shell": "./shell.ts", "./shell.css": "./shell.css" } }
