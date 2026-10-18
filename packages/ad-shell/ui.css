@@ -68,7 +68,8 @@
 
 /* Segmented control and chips */
 .ad-segmented { display: inline-flex; padding: 3px; gap: 2px; border: 1px solid var(--ad-ui-line, #d6d6cf); border-radius: var(--ad-ui-radius, 6px); background: #eceee6; }
-.ad-segmented--full { display: flex; }
+.ad-segmented--full { display: flex; flex-wrap: wrap; }
+.ad-segmented--full button { flex: 1 1 auto; min-width: 0; }
 .ad-segmented button { flex: 1; min-height: 28px; padding: 0 10px; border: 0; border-radius: 4px; background: transparent; color: var(--ad-ui-muted, #74746d); font: inherit; font-size: var(--ad-ui-size-small, 12px); font-weight: 600; white-space: nowrap; cursor: pointer; }
 .ad-segmented button:hover { color: var(--ad-ui-ink, #1f201c); }
 .ad-segmented button.active, .ad-segmented button[aria-pressed="true"], .ad-segmented input:checked + span { background: #fff; color: var(--ad-ui-ink, #1f201c); box-shadow: 0 1px 3px rgba(0,0,0,.08); }

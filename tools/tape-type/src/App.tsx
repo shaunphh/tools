@@ -463,8 +463,8 @@ function RangeField({ label, value, min, max, step = 1, suffix = '', disabled = 
   const progress = ((value - min) / (max - min)) * 100
   const shown = format ? format(value) : `${Math.round(value * 100) / 100}${suffix}`
   return (
-    <label className="range-field" title={title}>
-      <span className="field-heading"><span>{label}</span><output>{shown}</output></span>
+    <label className="ad-range range-field" title={title}>
+      <span className="ad-range__head field-heading"><span>{label}</span><output>{shown}</output></span>
       <input
         type="range"
         aria-label={label}
@@ -546,7 +546,7 @@ function Segmented<T extends string>({ label, note, value, options, disabled = f
   return (
     <div className="position-field">
       <span>{label}{note && <em>{note}</em>}</span>
-      <div className="piece-toggle compact" role="group" aria-label={label} style={{ gridTemplateColumns: `repeat(${options.length}, 1fr)` }}>
+      <div className="ad-segmented ad-segmented--full piece-toggle compact" role="group" aria-label={label} style={{ gridTemplateColumns: `repeat(${options.length}, 1fr)` }}>
         {options.map((option) => {
           const off = locked?.(option.value) ?? false
           return <button key={option.value} aria-pressed={value === option.value} className={value === option.value ? 'active' : ''} disabled={disabled || off} title={off ? lockedNote : undefined} onClick={() => onChange(option.value)}>{option.label}</button>
@@ -1521,12 +1521,12 @@ function App() {
         <aside className="controls-panel">
           {!isVideo && !isInside && (
             <Panel id="cover" title="Kind of post" summary={summaries.cover} open={panels.cover} onToggle={togglePanel}>
-              <label className="toggle-row spread">
+              <label className="ad-switch toggle-row spread">
                 <span>Partner post <small>{PARTNER_LOOK.description} · for partnerships and special posts</small></span>
                 <input type="checkbox" checked={cover.partner} onChange={(event) => choosePartner(event.target.checked)} />
-                <span className="switch" />
+                <span className="ad-switch__track" />
               </label>
-              <p className="panel-note">{cover.partner
+              <p className="ad-hint panel-note">{cover.partner
                 ? 'A Partner post stands apart in the grid: capitals on stacked torn strips, with a Partner tag. It is for partnerships and special posts only; everything else is a post.'
                 : `A post is ${POST_LOOK.description.toLocaleLowerCase()}, so the grid reads as one. Partner post is the exception, for partnerships and special posts.`}</p>
             </Panel>
@@ -1542,7 +1542,7 @@ function App() {
                   </button>
                 ))}
               </div>
-              <p className="panel-note">The profile grid shows only the middle of a video cover, so the words stay inside the lines. The logo and arrow sit in the corners, outside them.</p>
+              <p className="ad-hint panel-note">The profile grid shows only the middle of a video cover, so the words stay inside the lines. The logo and arrow sit in the corners, outside them.</p>
             </Panel>
           )}
 
@@ -1556,11 +1556,11 @@ function App() {
                   </button>
                 ))}
               </div>
-              <p className="panel-note">A page opens with a title or with a label, not both. Each kind keeps its own words, so switching between them loses nothing.</p>
+              <p className="ad-hint panel-note">A page opens with a title or with a label, not both. Each kind keeps its own words, so switching between them loses nothing.</p>
               <div className="sub-block">
-                <div className="section-label-row">
-                  <span className="field-label">Template</span>
-                  <span className="field-hint">{changedFromTemplate ? `Changed from ${template.name}` : 'What the page starts as'}</span>
+                <div className="ad-section section-label-row">
+                  <span className="ad-label">Template</span>
+                  <span className="ad-hint">{changedFromTemplate ? `Changed from ${template.name}` : 'What the page starts as'}</span>
                 </div>
                 <div className="template-list" role="group" aria-label="Templates">
                   {templates[inside.kind].map((option, index) => {
@@ -1580,69 +1580,69 @@ function App() {
                 <div className="photo-actions">
                   {replaceAsked ? (
                     <>
-                      <span className="panel-note">Replace this page’s words and switches with {replaceAsked.key === template.key ? 'the template’s' : `${replaceAsked.name}’s`}?{photos[inside.kind] ? ' Your photo is set aside, to bring back.' : ''}</span>
+                      <span className="ad-hint panel-note">Replace this page’s words and switches with {replaceAsked.key === template.key ? 'the template’s' : `${replaceAsked.name}’s`}?{photos[inside.kind] ? ' Your photo is set aside, to bring back.' : ''}</span>
                       <span className="confirm-actions">
-                        <button className="text-button underlined" onClick={() => chooseTemplate(replaceAsked)}>Yes, replace</button>
-                        <button className="text-button underlined" onClick={() => setReplaceAsked(null)}>Keep mine</button>
+                        <button className="ad-btn ad-btn--link" onClick={() => chooseTemplate(replaceAsked)}>Yes, replace</button>
+                        <button className="ad-btn ad-btn--link" onClick={() => setReplaceAsked(null)}>Keep mine</button>
                       </span>
                     </>
                   ) : (
-                    <button className="text-button underlined" disabled={!changedFromTemplate} title={changedFromTemplate ? 'Puts this page’s words and switches back as the template has them, and its picture. A photo of your own is set aside, to bring back' : 'This page is as its template has it'} onClick={() => pickTemplate(template)}>Back to the template</button>
+                    <button className="ad-btn ad-btn--link" disabled={!changedFromTemplate} title={changedFromTemplate ? 'Puts this page’s words and switches back as the template has them, and its picture. A photo of your own is set aside, to bring back' : 'This page is as its template has it'} onClick={() => pickTemplate(template)}>Back to the template</button>
                   )}
                 </div>
               </div>
               {savingTo && (
                 <div className="sub-block">
-                  <div className="section-label-row">
-                    <span className="field-label">Save as template</span>
-                    <span className="field-hint">{savingTo === 'files' ? 'This machine only' : 'Straight to GitHub'}</span>
+                  <div className="ad-section section-label-row">
+                    <span className="ad-label">Save as template</span>
+                    <span className="ad-hint">{savingTo === 'files' ? 'This machine only' : 'Straight to GitHub'}</span>
                   </div>
                   {savingTo === 'github' && !githubKey ? (
                     <div className="template-form">
-                      <p className="panel-note">Templates saved here go straight into the tool on GitHub, for everyone. That takes a GitHub key: a fine-grained token for {REPOSITORY} only, with Contents set to “Read and write”. It is kept in this browser and only ever sent to GitHub. <a href={NEW_KEY_URL} target="_blank" rel="noreferrer">Make a key on GitHub</a></p>
-                      <input className="text-input" type="password" aria-label="GitHub key" placeholder="github_pat_…" value={keyDraft} autoComplete="off" spellCheck={false} onChange={(event) => setKeyDraft(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') keepGithubKey() }} />
+                      <p className="ad-hint panel-note">Templates saved here go straight into the tool on GitHub, for everyone. That takes a GitHub key: a fine-grained token for {REPOSITORY} only, with Contents set to “Read and write”. It is kept in this browser and only ever sent to GitHub. <a href={NEW_KEY_URL} target="_blank" rel="noreferrer">Make a key on GitHub</a></p>
+                      <input className="ad-input text-input" type="password" aria-label="GitHub key" placeholder="github_pat_…" value={keyDraft} autoComplete="off" spellCheck={false} onChange={(event) => setKeyDraft(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') keepGithubKey() }} />
                       <div className="photo-actions">
-                        <button className="panel-button" disabled={!keyDraft.trim()} onClick={keepGithubKey}>Keep the key</button>
+                        <button className="ad-btn ad-btn--sm" disabled={!keyDraft.trim()} onClick={keepGithubKey}>Keep the key</button>
                       </div>
                     </div>
                   ) : templateDraft ? (
                     <div className="template-form">
-                      <input className="text-input" aria-label="Template name" placeholder="Its name, like News story" value={templateDraft.name} maxLength={60} autoFocus onChange={(event) => setTemplateDraft({ ...templateDraft, name: event.target.value })} onKeyDown={(event) => { if (event.key === 'Enter' && draftProblem === null) saveAsTemplate() }} />
-                      <input className="text-input" aria-label="What it’s for" placeholder="What it’s for, in a line" value={templateDraft.note} maxLength={120} onChange={(event) => setTemplateDraft({ ...templateDraft, note: event.target.value })} onKeyDown={(event) => { if (event.key === 'Enter' && draftProblem === null) saveAsTemplate() }} />
+                      <input className="ad-input text-input" aria-label="Template name" placeholder="Its name, like News story" value={templateDraft.name} maxLength={60} autoFocus onChange={(event) => setTemplateDraft({ ...templateDraft, name: event.target.value })} onKeyDown={(event) => { if (event.key === 'Enter' && draftProblem === null) saveAsTemplate() }} />
+                      <input className="ad-input text-input" aria-label="What it’s for" placeholder="What it’s for, in a line" value={templateDraft.note} maxLength={120} onChange={(event) => setTemplateDraft({ ...templateDraft, note: event.target.value })} onKeyDown={(event) => { if (event.key === 'Enter' && draftProblem === null) saveAsTemplate() }} />
                       {photo && (
-                        <label className="toggle-row spread">
+                        <label className="ad-switch toggle-row spread">
                           <span>Keep your photo in it <small>As the template’s picture, until someone chooses their own</small></span>
                           <input type="checkbox" checked={templateDraft.keepPhoto} onChange={(event) => setTemplateDraft({ ...templateDraft, keepPhoto: event.target.checked })} />
-                          <span className="switch" />
+                          <span className="ad-switch__track" />
                         </label>
                       )}
-                      <p className="panel-note">{draftProblem ?? `${draftReplaces ? `Saves over ${draftReplaces.name}, in its place in the list.` : `Saved as src/templates/${inside.kind}/${draftKey}.json.`} ${savingTo === 'github' ? 'It goes to GitHub, and everyone has it once the tool has been rebuilt, in a minute or so.' : 'Everyone gets it with the next push.'}`}</p>
+                      <p className="ad-hint panel-note">{draftProblem ?? `${draftReplaces ? `Saves over ${draftReplaces.name}, in its place in the list.` : `Saved as src/templates/${inside.kind}/${draftKey}.json.`} ${savingTo === 'github' ? 'It goes to GitHub, and everyone has it once the tool has been rebuilt, in a minute or so.' : 'Everyone gets it with the next push.'}`}</p>
                       <div className="photo-actions">
-                        <button className="panel-button" disabled={draftProblem !== null || savingTemplate} onClick={saveAsTemplate}><Save size={14} aria-hidden="true" /> {savingTemplate ? 'Saving…' : draftReplaces ? 'Save over it' : 'Save template'}</button>
-                        <button className="text-button underlined" onClick={() => setTemplateDraft(null)}>Cancel</button>
+                        <button className="ad-btn ad-btn--sm" disabled={draftProblem !== null || savingTemplate} onClick={saveAsTemplate}><Save size={14} aria-hidden="true" /> {savingTemplate ? 'Saving…' : draftReplaces ? 'Save over it' : 'Save template'}</button>
+                        <button className="ad-btn ad-btn--link" onClick={() => setTemplateDraft(null)}>Cancel</button>
                       </div>
                     </div>
                   ) : removeAsked ? (
                     <div className="photo-actions">
-                      <span className="panel-note">Remove {template.name} from the templates{savingTo === 'github' ? ', for everyone' : ''}? This page keeps its words.</span>
+                      <span className="ad-hint panel-note">Remove {template.name} from the templates{savingTo === 'github' ? ', for everyone' : ''}? This page keeps its words.</span>
                       <span className="confirm-actions">
-                        <button className="text-button underlined" onClick={removeThisTemplate}>Yes, remove</button>
-                        <button className="text-button underlined" onClick={() => setRemoveAsked(false)}>Keep it</button>
+                        <button className="ad-btn ad-btn--link" onClick={removeThisTemplate}>Yes, remove</button>
+                        <button className="ad-btn ad-btn--link" onClick={() => setRemoveAsked(false)}>Keep it</button>
                       </span>
                     </div>
                   ) : (
                     <>
                       <div className="photo-actions">
-                        <button className="panel-button" onClick={() => openTemplateDraft(false)}><Save size={14} aria-hidden="true" /> Save as new template</button>
+                        <button className="ad-btn ad-btn--sm" onClick={() => openTemplateDraft(false)}><Save size={14} aria-hidden="true" /> Save as new template</button>
                       </div>
                       {template.key !== EXAMPLE && (
                         <div className="template-own">
-                          <button className="text-button underlined" onClick={() => openTemplateDraft(true)}>Update {template.name}</button>
-                          <button className="text-button underlined" onClick={() => { setRemoveAsked(true); setTemplateNote(null) }}>Remove {template.name}</button>
+                          <button className="ad-btn ad-btn--link" onClick={() => openTemplateDraft(true)}>Update {template.name}</button>
+                          <button className="ad-btn ad-btn--link" onClick={() => { setRemoveAsked(true); setTemplateNote(null) }}>Remove {template.name}</button>
                         </div>
                       )}
-                      {templateNote && <p className="panel-note" role="status">{templateNote}</p>}
-                      {savingTo === 'github' && <button className="text-button underlined" onClick={forgetGithubKey}>Forget the GitHub key</button>}
+                      {templateNote && <p className="ad-hint panel-note" role="status">{templateNote}</p>}
+                      {savingTo === 'github' && <button className="ad-btn ad-btn--link" onClick={forgetGithubKey}>Forget the GitHub key</button>}
                     </>
                   )}
                 </div>
@@ -1652,23 +1652,23 @@ function App() {
 
           {isInside && (
             <Panel id="words" title="Words" summary={summaries.words} open={panels.words} onToggle={togglePanel}>
-              <div className="section-label-row">
-                <span className="field-label">Label</span>
-                <span className="field-hint">{labelOff ? 'A title page has no label' : 'Capitals on tape'}</span>
+              <div className="ad-section section-label-row">
+                <span className="ad-label">Label</span>
+                <span className="ad-hint">{labelOff ? 'A title page has no label' : 'Capitals on tape'}</span>
               </div>
-              <input className="eyebrow-input" aria-label="Label" value={inside.label} maxLength={40} placeholder={labelOff ? '' : 'Meet the artists'} disabled={labelOff} title={labelOff ? 'Switch to a label page to use a label' : undefined} onChange={(event) => updateInside('label', event.target.value)} />
+              <input className="ad-input eyebrow-input" aria-label="Label" value={inside.label} maxLength={40} placeholder={labelOff ? '' : 'Meet the artists'} disabled={labelOff} title={labelOff ? 'Switch to a label page to use a label' : undefined} onChange={(event) => updateInside('label', event.target.value)} />
               {insideLabel && (
                 <>
                   <Segmented label="Label cut" note="The label’s own" value={inside.cut} options={cutOptions} onChange={(cut) => updateInside('cut', cut)} />
-                  <button className="panel-button" disabled={inside.cut === 'plain'} title={inside.cut === 'plain' ? 'Plain tape has no cut to vary' : undefined} onClick={() => updateInside('seed', nextSeed())}><Sparkles size={14} aria-hidden="true" /> Randomise cut</button>
+                  <button className="ad-btn ad-btn--sm" disabled={inside.cut === 'plain'} title={inside.cut === 'plain' ? 'Plain tape has no cut to vary' : undefined} onClick={() => updateInside('seed', nextSeed())}><Sparkles size={14} aria-hidden="true" /> Randomise cut</button>
                 </>
               )}
               <div className="sub-block">
-                <div className="section-label-row">
-                  <span className="field-label">Title</span>
-                  {titleOff && <span className="field-hint">A label page has no title</span>}
+                <div className="ad-section section-label-row">
+                  <span className="ad-label">Title</span>
+                  {titleOff && <span className="ad-hint">A label page has no title</span>}
                 </div>
-                <textarea aria-label="Title" className="title-input" value={inside.title} rows={titleOff ? 1 : 3} disabled={titleOff} title={titleOff ? 'Switch to a title page to use a title' : undefined} onChange={(event) => updateInside('title', event.target.value)} />
+                <textarea aria-label="Title" className="ad-input title-input" value={inside.title} rows={titleOff ? 1 : 3} disabled={titleOff} title={titleOff ? 'Switch to a title page to use a title' : undefined} onChange={(event) => updateInside('title', event.target.value)} />
                 <div className="words-status">
                   <div className={`fit-line ${page.overflow === 'title' ? 'error' : ''}`}>
                     <strong>{page.titleLines ? `${page.titleSize}px` : 'No title'}</strong>
@@ -1678,17 +1678,17 @@ function App() {
                 </div>
               </div>
               <div className="sub-block">
-                <div className="section-label-row">
-                  <span className="field-label">Text</span>
+                <div className="ad-section section-label-row">
+                  <span className="ad-label">Text</span>
                   <FormatBar label="Text" onMark={(sign) => markWords('body', bodyRef.current, sign)} />
                 </div>
-                <textarea ref={bodyRef} aria-label="Text" className="body-input" value={inside.body} rows={7} onChange={(event) => updateInside('body', event.target.value)} />
+                <textarea ref={bodyRef} aria-label="Text" className="ad-input body-input" value={inside.body} rows={7} onChange={(event) => updateInside('body', event.target.value)} />
                 <Segmented label="Text colour" value={inside.bodyTone} options={toneOptions} onChange={(tone) => updateInside('bodyTone', tone)} />
                 <Segmented label="Text size" note={inside.bodyLarge ? 'A size up' : undefined} value={inside.bodyLarge ? 'large' : 'text'} options={[{ value: 'text', label: `${pageType.text.size}px` }, { value: 'large', label: `${pageType.text.large}px` }]} onChange={(size) => updateInside('bodyLarge', size === 'large')} />
               </div>
               <div className="sub-block">
-                <div className="section-label-row">
-                  <span className="field-label">Highlight</span>
+                <div className="ad-section section-label-row">
+                  <span className="ad-label">Highlight</span>
                   <FormatBar label="Highlight" onMark={(sign) => markWords('details', detailsRef.current, sign)} />
                 </div>
                 <textarea ref={detailsRef} aria-label="Highlight" className="body-input details-input" value={inside.details} rows={3} placeholder={'22 September · 6.30pm\nThis Must Be The Place, Smithfield\nTickets via Eventbrite'} onChange={(event) => updateInside('details', event.target.value)} />
@@ -1720,7 +1720,7 @@ function App() {
                     <dt>a new line</dt><dd>A new line</dd>
                     <dt>a blank line</dt><dd>A new paragraph</dd>
                   </dl>
-                  <p className="panel-note">Marks go round a whole line or a few words of one, and can sit inside each other: **_bold and italic_**. Pick words in a box and press B, S, I or U above it to put the marks in.</p>
+                  <p className="ad-hint panel-note">Marks go round a whole line or a few words of one, and can sit inside each other: **_bold and italic_**. Pick words in a box and press B, S, I or U above it to put the marks in.</p>
                 </details>
               </div>
               {blockedReason && !page.empty && <p className="fit-message error" role="status">{blockedReason}</p>}
@@ -1730,16 +1730,16 @@ function App() {
 
           {isInside && local && (
             <Panel id="type" title="Type · this machine only" summary={summaries.type} open={panels.type} onToggle={togglePanel}>
-              <p className="panel-note">For trying sizes and weights. The published tool doesn’t show this and keeps its own.</p>
+              <p className="ad-hint panel-note">For trying sizes and weights. The published tool doesn’t show this and keeps its own.</p>
               <div className="range-stack">
-                <span className="field-label">Title</span>
+                <span className="ad-label">Title</span>
                 <RangeField label="Largest" value={pageType.title.largest} min={TYPE_RANGE.title.size.min} max={TYPE_RANGE.title.size.max} suffix="px" onChange={(largest) => updateType('title', { largest, smallest: Math.min(largest, pageType.title.smallest) })} />
                 <RangeField label="Smallest" value={pageType.title.smallest} min={TYPE_RANGE.title.size.min} max={TYPE_RANGE.title.size.max} suffix="px" onChange={(smallest) => updateType('title', { smallest, largest: Math.max(smallest, pageType.title.largest) })} />
                 <Segmented label="Weight" note={WEIGHT_NAMES[pageType.title.weight]} value={String(pageType.title.weight)} options={weightOptions} onChange={(weight) => updateType('title', { weight: Number(weight) })} />
                 <RangeField label="Line height" value={pageType.title.lineHeight} min={TYPE_RANGE.title.lineHeight.min} max={TYPE_RANGE.title.lineHeight.max} step={0.01} format={(value) => value.toFixed(2)} onChange={(lineHeight) => updateType('title', { lineHeight })} />
               </div>
               <div className="sub-block range-stack">
-                <span className="field-label">Text</span>
+                <span className="ad-label">Text</span>
                 <RangeField label="Size" value={pageType.text.size} min={TYPE_RANGE.text.size.min} max={TYPE_RANGE.text.size.max} suffix="px" onChange={(size) => updateType('text', { size })} />
                 <RangeField label="A size up" value={pageType.text.large} min={TYPE_RANGE.text.size.min} max={TYPE_RANGE.text.size.max} suffix="px" onChange={(large) => updateType('text', { large })} />
                 <Segmented label="Weight" note={WEIGHT_NAMES[pageType.text.weight]} value={String(pageType.text.weight)} options={weightOptions} onChange={(weight) => updateType('text', { weight: Number(weight) })} />
@@ -1747,33 +1747,33 @@ function App() {
                 <RangeField label="Line height, a size up" value={pageType.text.largeLineHeight} min={TYPE_RANGE.text.lineHeight.min} max={TYPE_RANGE.text.lineHeight.max} step={0.01} format={(value) => value.toFixed(2)} onChange={(largeLineHeight) => updateType('text', { largeLineHeight })} />
               </div>
               <div className="sub-block range-stack">
-                <span className="field-label">Highlight</span>
+                <span className="ad-label">Highlight</span>
                 <RangeField label="Size" value={pageType.details.size} min={TYPE_RANGE.text.size.min} max={TYPE_RANGE.text.size.max} suffix="px" onChange={(size) => updateType('details', { size })} />
                 <RangeField label="A size up" value={pageType.details.large} min={TYPE_RANGE.text.size.min} max={TYPE_RANGE.text.size.max} suffix="px" onChange={(large) => updateType('details', { large })} />
                 <Segmented label="Weight" note={WEIGHT_NAMES[pageType.details.weight]} value={String(pageType.details.weight)} options={weightOptions} onChange={(weight) => updateType('details', { weight: Number(weight) })} />
               </div>
               <div className="sub-block range-stack">
-                <span className="field-label">Words in stars</span>
+                <span className="ad-label">Words in stars</span>
                 <Segmented label="Two stars" note={WEIGHT_NAMES[pageType.strong.weight]} value={String(pageType.strong.weight)} options={weightOptions} onChange={(weight) => updateType('strong', { weight: Number(weight) })} />
                 <Segmented label="One star" note={WEIGHT_NAMES[pageType.semi.weight]} value={String(pageType.semi.weight)} options={weightOptions} onChange={(weight) => updateType('semi', { weight: Number(weight) })} />
               </div>
               <div className="sub-block range-stack">
-                <span className="field-label">Label</span>
+                <span className="ad-label">Label</span>
                 <RangeField label="Size" value={pageType.label.size} min={TYPE_RANGE.label.size.min} max={TYPE_RANGE.label.size.max} suffix="px" onChange={(size) => updateType('label', { size })} />
                 <Segmented label="Weight" note={WEIGHT_NAMES[pageType.label.weight]} value={String(pageType.label.weight)} options={weightOptions} onChange={(weight) => updateType('label', { weight: Number(weight) })} />
               </div>
               <div className="photo-actions">
-                <button className="panel-button" onClick={copyType}>{copied === 'type' ? <Check size={14} aria-hidden="true" /> : <Clipboard size={14} aria-hidden="true" />} {copied === 'type' ? 'Copied' : 'Copy values'}</button>
-                <button className="text-button underlined" disabled={sameType(pageType, PAGE_TYPE)} onClick={() => setPageType(PAGE_TYPE)}>Back to the tool’s</button>
+                <button className="ad-btn ad-btn--sm" onClick={copyType}>{copied === 'type' ? <Check size={14} aria-hidden="true" /> : <Clipboard size={14} aria-hidden="true" />} {copied === 'type' ? 'Copied' : 'Copy values'}</button>
+                <button className="ad-btn ad-btn--link" disabled={sameType(pageType, PAGE_TYPE)} onClick={() => setPageType(PAGE_TYPE)}>Back to the tool’s</button>
               </div>
             </Panel>
           )}
 
           {!isInside && <Panel id="words" title="Words" summary={summaries.words} open={panels.words} onToggle={togglePanel}>
-            <div className="section-label-row">
-              <span className="field-label">Headline</span>
+            <div className="ad-section section-label-row">
+              <span className="ad-label">Headline</span>
               <div className="sample-picker">
-                <button className="text-button" aria-expanded={sampleOpen} onClick={() => setSampleOpen((open) => !open)}>Try a sample <ChevronDown size={14} /></button>
+                <button className="ad-btn ad-btn--link" aria-expanded={sampleOpen} onClick={() => setSampleOpen((open) => !open)}>Try a sample <ChevronDown size={14} /></button>
                 {sampleOpen && (
                   <div className="sample-menu">
                     {samples.map((sample, index) => (
@@ -1799,33 +1799,33 @@ function App() {
               </div>
               <div className="quick-toggles">
                 {!isFeature && (
-                  <label className="toggle-row">
+                  <label className="ad-switch toggle-row">
                     <span>Title case</span>
                     <input type="checkbox" checked={settings.titleCase} onChange={(event) => update('titleCase', event.target.checked)} />
-                    <span className="switch" />
+                    <span className="ad-switch__track" />
                   </label>
                 )}
-                <label className="toggle-row">
+                <label className="ad-switch toggle-row">
                   <span>Auto wrap</span>
                   <input type="checkbox" checked={settings.autoWrap} onChange={(event) => update('autoWrap', event.target.checked)} />
-                  <span className="switch" />
+                  <span className="ad-switch__track" />
                 </label>
               </div>
             </div>
             {fitTone && <p className={`fit-message ${fitTone}`} role="status">{statusMessage}</p>}
             <div className="sub-block">
-              <div className="section-label-row">
-                <span className="field-label">Eyebrow</span>
+              <div className="ad-section section-label-row">
+                <span className="ad-label">Eyebrow</span>
                 <label className="toggle-row inline-toggle">
                   <span className="visually-hidden">Show eyebrow</span>
                   <input type="checkbox" checked={settings.eyebrowEnabled} onChange={(event) => update('eyebrowEnabled', event.target.checked)} />
-                  <span className="switch" />
+                  <span className="ad-switch__track" />
                 </label>
               </div>
               {settings.eyebrowEnabled && (
                 <>
                   <input
-                    className="eyebrow-input"
+                    className="ad-input eyebrow-input"
                     aria-label="Eyebrow text"
                     value={settings.eyebrow}
                     maxLength={40}
@@ -1855,16 +1855,16 @@ function App() {
           <Panel id="photo" title="Photo" summary={summaries.photo} open={panels.photo} onToggle={togglePanel}>
             {isInside && <Segmented label="Picture" note={!page.banner ? 'Words only' : inside.image === 'fill' ? `Fills the page · ${page.banner.height}px` : typeof inside.image === 'number' ? `Its own height · ${page.banner.height}px` : `${page.banner.height}px tall`} value={typeof inside.image === 'number' ? null : inside.image} options={imageOptions} onChange={(image) => updateInside('image', image)} />}
             {isInside && <Segmented label="Position" note={page.banner ? PICTURE_NOTES[inside.position] : undefined} value={inside.position} options={pictureOptions} disabled={!page.banner} onChange={(place) => updateInside('position', place)} />}
-            {isInside && page.banner && <p className="panel-note">Or drag the picture’s edge, beside the words, for a height of its own. It stops where the words would run out of room.</p>}
+            {isInside && page.banner && <p className="ad-hint panel-note">Or drag the picture’s edge, beside the words, for a height of its own. It stops where the words would run out of room.</p>}
             <div className="photo-actions">
               <label className="panel-button upload-button" onClick={clickPhoto}>
                 <input type="file" accept="image/*" onChange={choosePhoto} />
                 {anyPhoto ? <ImageIcon size={14} aria-hidden="true" /> : <Upload size={14} aria-hidden="true" />}
                 {!photo ? 'Choose photo' : shownPhoto ? 'Replace photo' : 'Show photo'}
               </label>
-              {shownPhoto && <button className="text-button underlined" disabled={!photoMoved} onClick={() => setView(CENTRED)}>Reset position</button>}
+              {shownPhoto && <button className="ad-btn ad-btn--link" disabled={!photoMoved} onClick={() => setView(CENTRED)}>Reset position</button>}
             </div>
-            <p className="panel-note">Or drop an image on the page, or paste one (⌘ or Ctrl + V) copied from a website.</p>
+            <p className="ad-hint panel-note">Or drop an image on the page, or paste one (⌘ or Ctrl + V) copied from a website.</p>
             {shownPhoto ? (
               <div className="range-stack">
                 <RangeField label="Zoom" value={view.zoom} min={1} max={MAX_ZOOM} step={0.01} format={(value) => `${Math.round(value * 100)}%`} onChange={(zoom) => setView((current) => ({ ...current, zoom }))} />
@@ -1872,22 +1872,22 @@ function App() {
                 <RangeField label="Up – down" value={view.y} min={0} max={100} disabled={slack.y < 1} format={(value) => (slack.y < 1 ? 'Fits' : value === 50 ? 'Centre' : `${Math.round(value)}%`)} onChange={(y) => setView((current) => ({ ...current, y }))} />
               </div>
             ) : (
-              <p className="panel-note">{isInside
+              <p className="ad-hint panel-note">{isInside
                 ? (page.banner ? 'Photos stay in your browser. Once one is in, drag it in its banner to reposition it.' : 'This page has no picture. Pick a height above to add one, or Fill to give it the room the words leave.')
                 : photo ? 'The photo is hidden while another background is showing.' : 'Photos stay in your browser. Once one is in, drag it on the cover to reposition it.'}</p>
             )}
-            {sampleShown && <p className="panel-note">This is the template’s own picture, and it goes in the export as it is. Choose a photo of your own to replace it.</p>}
+            {sampleShown && <p className="ad-hint panel-note">This is the template’s own picture, and it goes in the export as it is. Choose a photo of your own to replace it.</p>}
             {photoAside && (
               <div className="photo-actions">
-                <span className="panel-note">Your photo is set aside while the template’s picture shows.</span>
-                <button className="text-button underlined" onClick={useOwnPhoto}>Use your photo</button>
+                <span className="ad-hint panel-note">Your photo is set aside while the template’s picture shows.</span>
+                <button className="ad-btn ad-btn--link" onClick={useOwnPhoto}>Use your photo</button>
               </div>
             )}
-            {photo && <p className="panel-note">A photo stays where it was chosen: each page and cover has its own.</p>}
-            <label className="toggle-row spread">
+            {photo && <p className="ad-hint panel-note">A photo stays where it was chosen: each page and cover has its own.</p>}
+            <label className="ad-switch toggle-row spread">
               <span>Darken photo <small>{Math.round(PHOTO_DARKEN * 100)}% black, so the words read</small></span>
               <input type="checkbox" checked={cover.darken} onChange={(event) => updateCover('darken', event.target.checked)} />
-              <span className="switch" />
+              <span className="ad-switch__track" />
             </label>
           </Panel>
 
@@ -1901,10 +1901,10 @@ function App() {
               disabled={marksLogo === 'off'}
               onChange={(colour) => updateCover('logoColour', colour)}
             />
-            <label className="toggle-row spread">
+            <label className="ad-switch toggle-row spread">
               <span>Swipe arrow <small>Bottom right corner</small></span>
               <input type="checkbox" checked={marksArrow} onChange={(event) => (isInside ? updateInside('arrow', event.target.checked) : updateCover('arrow', event.target.checked))} />
-              <span className="switch" />
+              <span className="ad-switch__track" />
             </label>
             <Segmented
               label="Arrow colour"
@@ -1934,7 +1934,7 @@ function App() {
             <div className="style-caption">
               <Lock size={12} aria-hidden="true" />
               <span>Barlow {WEIGHT_NAMES[layout.weight] ?? ''} {layout.weight} · {isFeature ? 'ALL CAPS' : settings.titleCase ? 'Title Case' : 'as typed'} · {series ? TEXT_AREA_WIDTH : columnWidth(settings.column)}px column</span>
-              <button className="text-button" onClick={resetStyle} title="Put this style's tape, colour, cut and layout back to the house look">Reset style</button>
+              <button className="ad-btn ad-btn--link" onClick={resetStyle} title="Put this style's tape, colour, cut and layout back to the house look">Reset style</button>
             </div>
           </Panel>
 
@@ -1958,9 +1958,9 @@ function App() {
                 )
               })}
             </div>
-            <p className="panel-note">{tapeNote}</p>
+            <p className="ad-hint panel-note">{tapeNote}</p>
             {clash && <p className="tone-note" role="status">{clash}</p>}
-            <div className="piece-toggle" role="group" aria-label="Tape pieces">
+            <div className="ad-segmented ad-segmented--full piece-toggle" role="group" aria-label="Tape pieces">
               {([['Block', false], ['Strips', true]] as const).map(([label, perLine]) => {
                 const off = isLocked('perLine', perLine, look, locksOff)
                 return <button key={label} aria-pressed={settings.perLine === perLine} className={settings.perLine === perLine ? 'active' : ''} disabled={off} title={off ? LOCKED_NOTE : undefined} onClick={() => update('perLine', perLine)}>{label}</button>
@@ -1981,7 +1981,7 @@ function App() {
                 </button>
               ))}
             </div>
-            {ghost && <p className="panel-note">Ghost tape: the photo shows through the dark tape at {Math.round(TAPE_GHOST * 100)}%, the same on every photo. Light lettering; the eyebrow keeps its yellow tape.</p>}
+            {ghost && <p className="ad-hint panel-note">Ghost tape: the photo shows through the dark tape at {Math.round(TAPE_GHOST * 100)}%, the same on every photo. Light lettering; the eyebrow keeps its yellow tape.</p>}
             {noTape && <p className="tone-note">No tape: the text sits straight on the image.</p>}
           </Panel>
 
@@ -2004,7 +2004,7 @@ function App() {
                   <label className="toggle-row auto-size-toggle">
                     <span>Auto size</span>
                     <input type="checkbox" checked={settings.autoSize} onChange={(event) => setAutoSize(event.target.checked)} />
-                    <span className="switch" />
+                    <span className="ad-switch__track" />
                   </label>
                   <RangeField label="Cover size" value={settings.autoSize ? layout.fontSize : settings.fontSize} min={72} max={90} suffix="px" disabled={settings.autoSize} onChange={(value) => update('fontSize', value)} />
                 </>
@@ -2048,9 +2048,9 @@ function App() {
               </label>
             </div>
             <div className="variation-controls" title={variationNote}>
-              <button className="icon-button" aria-label="Previous variation" disabled={variationOff || historyIndex === 0} onClick={previous}><ArrowLeft size={18} /></button>
+              <button className="ad-btn ad-btn--quiet ad-btn--icon ad-btn--sm" aria-label="Previous variation" disabled={variationOff || historyIndex === 0} onClick={previous}><ArrowLeft size={18} /></button>
               <button className="randomise-button" disabled={variationOff} onClick={randomise}><Sparkles size={17} aria-hidden="true" /> Randomise cut</button>
-              <button className="icon-button" aria-label="Next variation" disabled={variationOff} onClick={next}><ArrowRight size={18} /></button>
+              <button className="ad-btn ad-btn--quiet ad-btn--icon ad-btn--sm" aria-label="Next variation" disabled={variationOff} onClick={next}><ArrowRight size={18} /></button>
             </div>
             <div className="seed-control">
               <button aria-label={locked ? 'Unlock seed' : 'Lock seed'} aria-pressed={locked} onClick={() => update('seedLocked', !locked)}>{locked ? <Lock size={14} /> : <Unlock size={14} />}</button>
@@ -2180,7 +2180,7 @@ function App() {
 
         <footer className="export-bar">
           <div className="export-status">
-            <p className="eyebrow">{exportBlocked ? 'Export' : 'Ready for layout'}</p>
+            <p className="ad-eyebrow">{exportBlocked ? 'Export' : 'Ready for layout'}</p>
             {exportBlocked
               ? <p className="export-message" role="status">{exportBlocked}</p>
               : <strong>Export clean, editable artwork</strong>}

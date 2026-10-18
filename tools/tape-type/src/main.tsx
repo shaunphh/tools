@@ -16,6 +16,7 @@ import '@fontsource/barlow-condensed/600.css'
 import '@fontsource/barlow-condensed/700.css'
 import '@fontsource/barlow-condensed/800.css'
 import '@ad/shell/shell.css'
+import '@ad/shell/ui.css'
 import './styles.css'
 import { applyUiTokens } from '@ad/shell/shell'
 applyUiTokens()
