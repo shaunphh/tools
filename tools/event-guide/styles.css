@@ -245,21 +245,23 @@ p {
   margin-top: 0;
 }
 
+/* Headings in the news site's voice (19 Oct 2026): Bold, −3%, sentence case; the ui tokens carry the sizes. */
 h1,
 h2 {
   margin-bottom: 0;
-  font-family: "Barlow Condensed", sans-serif;
-  font-weight: 800;
+  font-family: "Barlow GX Normal", Barlow, sans-serif;
+  font-weight: 141;
   line-height: 0.95;
-  text-transform: uppercase;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
 }
 
 h1 {
-  font-size: 32px;
+  font-size: var(--ad-ui-t-title, 24px);
 }
 
 h2 {
-  font-size: 27px;
+  font-size: var(--ad-ui-t-title, 24px);
 }
 
 .source-actions {
@@ -555,6 +557,12 @@ input[name="export-scale"] + span {
   font-weight: 500;
 }
 
+.generation-summary h2 b svg {
+  width: 0.7em;
+  height: 0.7em;
+  vertical-align: -0.05em;
+}
+
 .generation-actions {
   display: grid;
   gap: 8px;
@@ -584,7 +592,7 @@ input[name="export-scale"] + span {
 }
 
 .preview-heading h2 {
-  font-size: clamp(32px, 4vw, 48px);
+  font-size: clamp(28px, 3vw, 40px);
 }
 
 .preview-count {

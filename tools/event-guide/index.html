@@ -42,7 +42,7 @@
           <div class="panel__heading">
             <div>
               <span class="ad-eyebrow">Source</span>
-              <h1 id="source-title">Weekly events</h1>
+              <h1 id="source-title">The week’s events</h1>
             </div>
             <span id="source-badge" class="ad-status">Connecting</span>
           </div>
@@ -65,9 +65,7 @@
             <button id="load-sheet" class="ad-btn ad-btn--dark" type="button">
               <span>Load Google Sheet</span>
             </button>
-            <button id="refresh-sheet" class="ad-btn ad-btn--icon" type="button" aria-label="Refresh data">
-              ↻
-            </button>
+            <button id="refresh-sheet" class="ad-btn ad-btn--icon" type="button" aria-label="Refresh data"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"/></svg></button>
           </div>
           <p id="source-message" class="ad-hint source-message" role="status" aria-live="polite">
             Checking the public Sheet…
@@ -198,7 +196,7 @@
 
         <section class="generation-summary" aria-labelledby="generation-title">
           <span class="eyebrow eyebrow--on-dark">Output</span>
-          <h2 id="generation-title"><span id="selected-event-count">0</span> events <b>→</b> <span id="page-count">0</span> pages</h2>
+          <h2 id="generation-title"><span id="selected-event-count">0</span> events <b aria-label="to"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h16m-6-6 6 6-6 6"/></svg></b> <span id="page-count">0</span> pages</h2>
           <p id="integrity-status" class="integrity-status">Waiting for event data</p>
           <div class="generation-actions">
             <button id="generate-guide" class="ad-btn ad-btn--primary" type="button" disabled>
