@@ -15,6 +15,11 @@
 .ad-masthead__note { margin: 0; color: var(--ad-ui-chrome-muted, #c2c2c2); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ad-masthead__actions { display: flex; align-items: center; gap: 4px; flex-shrink: 0; margin-left: auto; }
 .ad-masthead h1.visually-hidden, .ad-masthead .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+/* A crowded masthead (Guide Studio's six actions at a laptop width): the switcher never clips, the
+   quiet actions keep their icon and drop their word (the title shows it on hover), the tool's own
+   middle gives first. */
+@media (min-width: 901px) { .ad-masthead__switch { flex-shrink: 0; } .ad-masthead__tool { min-width: 0; } }
+@media (min-width: 901px) and (max-width: 1500px) { .ad-masthead__actions .ad-btn--quiet:not(.ad-btn--icon) { font-size: 0; gap: 0; padding: 0 9px; } }
 @media (max-width: 900px) { .ad-masthead { flex-wrap: wrap; gap: 8px 12px; padding: 8px 14px; } .ad-masthead__tool { order: 3; flex-basis: 100%; } .ad-masthead__tools { display: none; } }
 @media (max-width: 600px) { .ad-masthead__switch { order: 4; flex-basis: 100%; } .ad-masthead__actions { flex-basis: 100%; margin-left: 0; overflow-x: auto; scrollbar-width: none; } }
 @media (prefers-reduced-motion: no-preference) { .ad-masthead__switch a { transition: background .15s, color .15s; } }
