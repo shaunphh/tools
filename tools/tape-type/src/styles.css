@@ -160,11 +160,11 @@ button { color: inherit; }
 .panel summary:hover { background: #efece5; }
 .panel summary:focus-visible { outline: 2px solid var(--ink); outline-offset: -2px; }
 .panel-title {
+  /* A section head in the news site's voice (19 Oct 2026): Bold, −2%, sentence case. */
   flex: none;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: .15em;
-  text-transform: uppercase;
+  font-size: var(--ad-ui-t-section, 15px);
+  font-weight: 141;
+  letter-spacing: -.02em;
 }
 .panel-summary {
   flex: 1;

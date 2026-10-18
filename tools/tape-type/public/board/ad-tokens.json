@@ -499,6 +499,51 @@
         "name": "danger",
         "value": "#a5513a",
         "usage": "A state that stops the work (an export that failed, a story in the footer), and the one destructive button, on `panel`."
+      },
+      {
+        "name": "t-title",
+        "value": "24px",
+        "usage": "A tool's page or inspector title, in the news site's voice: Bold (141), −3% tracking, lines .95 apart, sentence case (the site's section heads at a chrome size). 'Make an entrance.', 'The week's events'."
+      },
+      {
+        "name": "t-dialog",
+        "value": "28px",
+        "usage": "A dialog's title: the title style a size up."
+      },
+      {
+        "name": "t-section",
+        "value": "15px",
+        "usage": "A section head inside a panel: Bold (141), −2% tracking, sentence case, as the site's older section heads."
+      },
+      {
+        "name": "t-name",
+        "value": "15px",
+        "usage": "A guide's, story's or page's name in a rail or list: capitals at 168, lines 1.12 apart, as the site sets story and event names (there at 20px)."
+      },
+      {
+        "name": "t-meta",
+        "value": "13px",
+        "usage": "A detail line under a name (saved by, pages, a date): Semi Condensed Medium (96), −2% tracking, lines 1.2 apart, in `muted`, as the site's meta lines."
+      },
+      {
+        "name": "t-body",
+        "value": "14px",
+        "usage": "Chrome text: Regular (71), lines 1.5 apart."
+      },
+      {
+        "name": "t-hint",
+        "value": "12px",
+        "usage": "Hints, counts and notes under a field."
+      },
+      {
+        "name": "t-label",
+        "value": "12px",
+        "usage": "A field's label: SemiBold (116), sentence case."
+      },
+      {
+        "name": "t-eyebrow",
+        "value": "11px",
+        "usage": "Eyebrows and tags: ExtraBold (166) capitals, .1em tracking on an eyebrow; a tag keeps the tape's own spacing."
       }
     ]
   }
