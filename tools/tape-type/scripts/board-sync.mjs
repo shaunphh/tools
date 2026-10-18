@@ -29,6 +29,7 @@ try {
 }
 copyFileSync(join(root, '..', '..', 'packages', 'ad-tape', 'src', 'ad-tokens.json'), join(board, 'ad-tokens.json'))
 for (const file of ['shell.css', 'ui.css']) copyFileSync(join(root, '..', '..', 'packages', 'ad-shell', file), join(board, file))
+copyFileSync(join(root, '..', '..', 'packages', 'ad-shell', 'fonts', 'BarlowGX-SemiCondensed.ttf'), join(board, 'fonts', 'BarlowGX-SemiCondensed.ttf'))
 copyFileSync(join(root, 'src', 'assets', 'fonts', 'BarlowGX-Normal.ttf'), join(board, 'fonts', 'BarlowGX-Normal.ttf'))
 for (const mark of ['logo-left.svg', 'logo-right.svg', 'swipe-arrow.svg']) copyFileSync(join(root, 'src', 'assets', mark), join(board, 'marks', mark))
 

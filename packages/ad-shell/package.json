@@ -8,6 +8,7 @@
     "./shell": "./shell.ts",
     "./shell.css": "./shell.css",
     "./ui": "./ui.ts",
-    "./ui.css": "./ui.css"
+    "./ui.css": "./ui.css",
+    "./icons": "./icons.ts"
   }
 }

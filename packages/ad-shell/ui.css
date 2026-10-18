@@ -1,3 +1,16 @@
+/* The site's third face for detail lines (the site serves the same file from static/fonts). */
+@font-face { font-family: 'Barlow GX Semi Condensed'; src: url('fonts/BarlowGX-SemiCondensed.ttf') format('truetype'); font-weight: 22 188; font-style: normal; font-display: block; }
+
+/* The voice: the news site's type rules at a chrome size (ui tokens t-*). Headings Bold −3% in sentence
+   case, names in capitals at 168, meta lines Semi Condensed Medium, eyebrows and tags ExtraBold capitals. */
+.ad-title { font-family: 'Barlow GX Normal', Barlow, Arial, sans-serif; font-weight: 141; font-size: var(--ad-ui-t-title, 24px); line-height: .95; letter-spacing: -.03em; margin: 0; text-wrap: balance; }
+.ad-section-title { font-weight: 141; font-size: var(--ad-ui-t-section, 15px); line-height: 1.1; letter-spacing: -.02em; margin: 0; }
+.ad-name { font-family: 'Barlow GX Normal', Barlow, Arial, sans-serif; font-weight: 168; font-size: var(--ad-ui-t-name, 15px); line-height: 1.12; text-transform: uppercase; letter-spacing: 0; }
+.ad-meta { font-family: 'Barlow GX Semi Condensed', 'Barlow Semi Condensed', 'Barlow GX Normal', sans-serif; font-weight: 96; font-size: var(--ad-ui-t-meta, 13px); line-height: 1.2; letter-spacing: -.02em; color: var(--ad-ui-muted, #74746d); font-variant-numeric: tabular-nums; }
+.ad-meta b, .ad-meta strong { font-weight: 116; color: var(--ad-ui-ink, #1f201c); }
+.ad-body { font-weight: 71; font-size: var(--ad-ui-t-body, 14px); line-height: 1.5; }
+.ad-num { font-variant-numeric: tabular-nums; }
+
 /* The UI kit every Alternative Dublin tool is built from (19 October 2026): buttons, fields, switches,
    segmented controls, ranges, chips, the surfaces (rail, stage, inspector, panel), dialogs, toasts and
    the words for a state. Everything is drawn from the ui tokens (packages/ad-tape/src/ad-tokens.json),
@@ -6,7 +19,7 @@
 
 /* Type and ground */
 .ad-ui, .ad-rail, .ad-inspector, .ad-dialog, .ad-toast { font-family: 'Barlow GX Normal', Barlow, Arial, sans-serif; font-size: var(--ad-ui-ui-size, 14px); color: var(--ad-ui-ink, #1f201c); }
-.ad-eyebrow { display: block; font-family: 'Barlow GX Condensed', 'Barlow Condensed', sans-serif; font-weight: 700; font-size: var(--ad-ui-ui-label-size, 11px); letter-spacing: .1em; text-transform: uppercase; color: var(--ad-ui-muted, #74746d); }
+.ad-eyebrow { display: block; font-family: 'Barlow GX Normal', Barlow, Arial, sans-serif; font-weight: 166; font-size: var(--ad-ui-t-eyebrow, 11px); letter-spacing: .1em; text-transform: uppercase; color: var(--ad-ui-muted, #74746d); }
 .ad-muted, .ad-hint { color: var(--ad-ui-muted, #74746d); }
 .ad-hint { display: block; font-size: var(--ad-ui-size-small, 12px); line-height: 1.5; margin: 6px 0 0; }
 .ad-hint--ok { color: var(--ad-ui-success, #4f6a2e); } .ad-hint--warn { color: var(--ad-ui-warning, #9a6a0a); } .ad-hint--bad { color: var(--ad-ui-danger, #a5513a); }
@@ -33,7 +46,7 @@
 
 /* Fields */
 .ad-field { display: block; margin: 0 0 16px; }
-.ad-field > span, .ad-label { display: block; font-size: var(--ad-ui-size-small, 12px); font-weight: 600; margin: 0 0 7px; color: var(--ad-ui-ink, #1f201c); }
+.ad-field > span, .ad-label { display: block; font-size: var(--ad-ui-t-label, 12px); font-weight: 116; margin: 0 0 7px; color: var(--ad-ui-ink, #1f201c); text-transform: none; letter-spacing: 0; }
 .ad-field input:not([type=checkbox]):not([type=radio]):not([type=range]), .ad-field textarea, .ad-field select, .ad-input { display: block; width: 100%; min-height: var(--ad-ui-control, 36px); padding: 8px 11px; border: 1px solid var(--ad-ui-line, #d6d6cf); border-radius: var(--ad-ui-radius, 6px); background: #fff; color: var(--ad-ui-ink, #1f201c); font: inherit; font-size: var(--ad-ui-ui-size, 14px); line-height: 1.4; transition: border-color .15s; }
 .ad-field textarea { resize: vertical; }
 .ad-field input:hover, .ad-field textarea:hover, .ad-input:hover { border-color: #c3c3bb; }
@@ -88,10 +101,10 @@
 .ad-rail-head { display: flex; justify-content: space-between; gap: 6px; }
 .ad-rail-head .ad-eyebrow { color: var(--ad-ui-ink, #1f201c); }
 .ad-inspector-head { padding: 22px 23px 18px; border-bottom: 1px solid var(--ad-ui-line, #d6d6cf); display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.ad-inspector-head h1, .ad-inspector-head h2 { font-size: 22px; font-weight: 600; letter-spacing: -.5px; line-height: 1.1; margin: 6px 0 0; }
+.ad-inspector-head h1, .ad-inspector-head h2 { font-weight: 141; font-size: var(--ad-ui-t-title, 24px); letter-spacing: -.03em; line-height: .95; margin: 6px 0 0; text-wrap: balance; }
 .ad-panel { padding: 22px 23px; border-bottom: 1px solid var(--ad-ui-line, #d6d6cf); }
 .ad-section { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 0 14px; }
-.ad-section h2, .ad-section h3 { font-size: 13px; font-weight: 600; margin: 0; }
+.ad-section h2, .ad-section h3 { font-weight: 141; font-size: var(--ad-ui-t-section, 15px); line-height: 1.1; letter-spacing: -.02em; margin: 0; }
 .ad-section > span { font-size: var(--ad-ui-ui-label-size, 11px); color: var(--ad-ui-muted, #74746d); }
 .ad-rule { border: 0; border-top: 1px solid var(--ad-ui-line, #d6d6cf); margin: 22px 0 18px; }
 .ad-note { padding: 12px 14px; border: 1px solid var(--ad-ui-line, #d6d6cf); border-radius: var(--ad-ui-radius, 6px); background: #f3f3ec; font-size: var(--ad-ui-size-small, 12px); line-height: 1.6; color: var(--ad-ui-ink, #1f201c); }
@@ -102,20 +115,20 @@
 .ad-status::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
 .ad-status--ok { color: var(--ad-ui-success, #4f6a2e); } .ad-status--warn { color: var(--ad-ui-warning, #9a6a0a); } .ad-status--bad { color: var(--ad-ui-danger, #a5513a); }
 .ad-empty { display: grid; place-content: center; gap: 8px; min-height: 260px; padding: 32px; text-align: center; border: 1px dashed #b8b8b0; border-radius: var(--ad-ui-radius, 6px); color: var(--ad-ui-muted, #74746d); }
-.ad-empty strong { display: block; font-family: 'Barlow GX Condensed', 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 22px; text-transform: uppercase; letter-spacing: .02em; color: var(--ad-ui-ink, #1f201c); }
+.ad-empty strong { display: block; font-weight: 141; font-size: var(--ad-ui-t-title, 24px); letter-spacing: -.03em; line-height: .95; color: var(--ad-ui-ink, #1f201c); }
 .ad-list { display: flex; flex-direction: column; gap: 9px; }
 .ad-list > button, .ad-list > a { display: flex; align-items: center; gap: 14px; padding: 14px; border: 1px solid var(--ad-ui-line, #d6d6cf); border-radius: var(--ad-ui-radius, 6px); background: #fff; color: inherit; font: inherit; text-align: left; cursor: pointer; text-decoration: none; }
 .ad-list > button:hover, .ad-list > a:hover { border-color: #9e9e94; }
-.ad-list strong { display: block; font-size: 14px; font-weight: 600; }
-.ad-list small { display: block; margin-top: 4px; font-size: var(--ad-ui-ui-label-size, 11px); color: var(--ad-ui-muted, #74746d); }
+.ad-list strong { display: block; font-weight: 168; font-size: var(--ad-ui-t-name, 15px); line-height: 1.12; text-transform: uppercase; }
+.ad-list small { display: block; margin-top: 4px; font-family: 'Barlow GX Semi Condensed', 'Barlow Semi Condensed', sans-serif; font-weight: 96; font-size: var(--ad-ui-t-meta, 13px); letter-spacing: -.02em; color: var(--ad-ui-muted, #74746d); font-variant-numeric: tabular-nums; }
 .ad-list > * > span:nth-child(2) { flex: 1; min-width: 0; }
-.ad-tag { font-family: 'Barlow GX Condensed', 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--ad-ui-success, #4f6a2e); }
+.ad-tag { font-family: 'Barlow GX Normal', Barlow, Arial, sans-serif; font-weight: 166; font-size: var(--ad-ui-t-eyebrow, 11px); letter-spacing: .06em; text-transform: uppercase; color: var(--ad-ui-success, #4f6a2e); }
 
 /* Dialog and toast */
 .ad-dialog { padding: 0; border: 1px solid var(--ad-ui-line, #d6d6cf); border-radius: 12px; background: var(--ad-ui-panel, #fbfbf7); color: var(--ad-ui-ink, #1f201c); width: 570px; max-width: calc(100vw - 30px); max-height: 90dvh; box-shadow: 0 20px 120px rgba(16,16,16,.35); }
 .ad-dialog::backdrop { background: rgba(16,16,16,.45); backdrop-filter: blur(3px); }
 .ad-dialog__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 24px 28px 18px; border-bottom: 1px solid var(--ad-ui-line, #d6d6cf); }
-.ad-dialog__head h2 { font-size: 28px; font-weight: 600; letter-spacing: -.6px; line-height: 1.05; margin: 6px 0 0; }
+.ad-dialog__head h2 { font-weight: 141; font-size: var(--ad-ui-t-dialog, 28px); letter-spacing: -.03em; line-height: .95; margin: 6px 0 0; text-wrap: balance; }
 .ad-dialog__body { padding: 22px 28px; max-height: 65dvh; overflow: auto; }
 .ad-dialog__body .ad-muted { font-size: 13px; line-height: 1.6; margin: 0 0 20px; }
 .ad-dialog__foot { display: flex; align-items: center; justify-content: flex-end; gap: 10px; padding: 16px 28px; border-top: 1px solid var(--ad-ui-line, #d6d6cf); background: #f4f4ee; }
