@@ -1,0 +1,179 @@
+import { EYEBROW_PADDING, coverSizeFromCharacters, wrapText } from './geometry'
+import type { InkMetrics } from './metrics'
+import { TEXT_AREA_WIDTH, columnWidth } from './settings'
+import { startsLowercase } from './text'
+import type { ColumnWidth, CoverFormat, CoverStyle, EyebrowMetrics } from './types'
+import { AD_TYPE } from './adTokens'
+
+// Every cover is set in Barlow Bold: one weight across posts, videos and both styles. (The
+// published feature covers measured as Black: stems 0.27 of the cap height, where Bold is 0.20.)
+export const HEADLINE_WEIGHT = AD_TYPE.coverHeadline.weight
+export const FEATURE_WEIGHT = AD_TYPE.coverHeadline.weight
+/** Every AD tag (eyebrows, labels, date strips, time tags) is ExtraBold capitals on clean-cut tape (2 Oct 2026). */
+export const EYEBROW_WEIGHT = AD_TYPE.eyebrow.weight
+export const weightFor = (style: CoverStyle) => (style === 'feature' ? FEATURE_WEIGHT : HEADLINE_WEIGHT)
+/** Cover headlines are tracked a touch tight, −2% of the size: the tokens' cover-headline letterSpacing (18 October 2026). */
+export const HEADLINE_TRACKING = AD_TYPE.coverHeadline.tracking
+/** The letters of a run as letter-spacing counts them: graphemes, so a letter with its accent, or a flag, is one. */
+export const lettersOf = (text: string): string[] => ('Segmenter' in Intl ? Array.from(new Intl.Segmenter().segment(text), (segment) => segment.segment) : Array.from(text))
+/** What tracking adds to a line's ink (less than nothing when tight): between the letters, not after the last. */
+export function trackedBy(text: string, size: number, tracking: number) {
+  const between = lettersOf(text).length - 1
+  return between > 0 ? tracking * size * between : 0
+}
+
+const MIN_SIZE = 72
+const MAX_SIZE = AD_TYPE.coverHeadline.size
+const SERIES_SIZE = 172
+const EYEBROW_MIN_SIZE = 26
+/** Labels are set at nine tenths of the published ones, which are about 40px whatever the headline size. */
+export const EYEBROW_SCALE = 0.9
+export const eyebrowSizeFor = (headlineSize: number) => Math.round(Math.min(46, Math.max(38, headlineSize * 0.52)) * EYEBROW_SCALE)
+
+export type Measure = (text: string, size: number, weight: number) => InkMetrics
+export type OverflowReason = 'lines' | 'width' | 'eyebrow'
+
+export interface LayoutInput {
+  /** Display text: normalised, cased for its style, one paragraph per line. */
+  text: string
+  style: CoverStyle
+  titleCase: boolean
+  coverFormat: CoverFormat
+  column: ColumnWidth
+  autoSize: boolean
+  fontSize: number
+  autoWrap: boolean
+  /** Normalised eyebrow text, or '' when the eyebrow is off. */
+  eyebrow: string
+  /** Tracking as a share of the size: the token's (HEADLINE_TRACKING) unless given. */
+  tracking?: number
+}
+
+export interface HeadlineLayout {
+  labels: string[]
+  widths: number[]
+  originOffsets: number[]
+  ascent: number
+  descent: number
+  fontSize: number
+  weight: number
+  characterCount: number
+  /** Lines the writer typed (paragraphs), which wrapping can split but never join. */
+  paragraphs: number
+  maxLines: number
+  measureWidth: number
+  overflow: OverflowReason | null
+  empty: boolean
+  eyebrow?: EyebrowMetrics
+  /** The tracking as drawn: letter-spacing in px at fontSize, 0 for none. */
+  letterSpacing: number
+}
+
+/** Sizes, wraps and checks a headline (and its eyebrow) against the brand rules. Pure, so it can be tested with a fake measure. */
+export function layoutHeadline(input: LayoutInput, measure: Measure): HeadlineLayout {
+  const caps = input.style === 'feature'
+  const weight = weightFor(input.style)
+  const tracking = input.tracking ?? HEADLINE_TRACKING
+  // Tracking is between the letters, so lines are wrapped and fitted by their tracked widths. The eyebrow is a tag, never tracked.
+  const measureLine: Measure = (value, size, lineWeight) => {
+    const ink = measure(value, size, lineWeight)
+    return tracking ? { ...ink, width: Math.max(1, ink.width + trackedBy(value, size, tracking)) } : ink
+  }
+  const series = input.coverFormat === 'series'
+  const maxLines = series ? 2 : 6
+  const measureWidth = series ? TEXT_AREA_WIDTH : columnWidth(input.column)
+  const text = input.text
+  const characterCount = text.replace(/\s+/g, ' ').trim().length
+  // In Title Case the only lowercase words are the minor ones; published covers end lines with them.
+  const avoidStart = !caps && input.titleCase ? startsLowercase : undefined
+
+  const wrapAt = (size: number, balance: boolean) => wrapText(
+    text || ' ',
+    measureWidth,
+    (value) => measureLine(value, size, weight).width,
+    input.autoWrap,
+    { balance, avoidStart },
+  )
+  const fits = (lines: string[], size: number) =>
+    lines.length <= maxLines && lines.every((line) => measureLine(line, size, weight).width <= measureWidth)
+
+  let fontSize: number
+  if (series) {
+    fontSize = SERIES_SIZE
+  } else if (!input.autoSize) {
+    fontSize = Math.max(MIN_SIZE, Math.min(MAX_SIZE, Math.round(input.fontSize)))
+  } else {
+    // Features start at full size; headlines start from the character-count ramp. Both shrink only to fit.
+    fontSize = caps ? MAX_SIZE : coverSizeFromCharacters(text)
+    while (fontSize > MIN_SIZE && !fits(wrapAt(fontSize, false), fontSize)) fontSize -= 1
+    // Give up a few pixels when that saves a whole line, as the published covers do.
+    const lineCount = wrapAt(fontSize, false).length
+    for (let smaller = fontSize - 1; smaller >= Math.max(MIN_SIZE, fontSize - 4); smaller -= 1) {
+      const candidate = wrapAt(smaller, false)
+      if (candidate.length < lineCount && fits(candidate, smaller)) {
+        fontSize = smaller
+        break
+      }
+    }
+  }
+
+  // Balancing only moves breaks (never adds lines), so it runs once, at the chosen size.
+  let labels = wrapAt(fontSize, true)
+  // When a minor word would still have to open a line, a few pixels smaller usually gives a clean break.
+  if (avoidStart && input.autoSize && !series && labels.slice(1).some(startsLowercase)) {
+    for (let smaller = fontSize - 1; smaller >= Math.max(MIN_SIZE, fontSize - 8); smaller -= 1) {
+      const candidate = wrapAt(smaller, true)
+      if (candidate.length <= labels.length && fits(candidate, smaller) && !candidate.slice(1).some(startsLowercase)) {
+        fontSize = smaller
+        labels = candidate
+        break
+      }
+    }
+  }
+  const metrics = labels.map((label) => measureLine(label, fontSize, weight))
+  // Capitals have no descenders, so feature strips are balanced on cap height rather than on "g/j".
+  const reference = measure(caps ? 'H' : 'Hgj', fontSize, weight)
+  const ascent = Math.max(reference.ascent || fontSize * 0.72, ...metrics.map((metric) => metric.ascent))
+  const descent = Math.max(caps ? fontSize * 0.02 : reference.descent || fontSize * 0.16, ...metrics.map((metric) => metric.descent))
+
+  let overflow: OverflowReason | null = null
+  if (text) {
+    if (labels.length > maxLines) overflow = 'lines'
+    else if (metrics.some((metric) => metric.width > measureWidth)) overflow = 'width'
+  }
+
+  let eyebrow: EyebrowMetrics | undefined
+  if (input.eyebrow && text) {
+    // A long label shrinks until its tag fits the safe area, and blocks export if it still can't.
+    const tagWidth = (size: number) => measure(input.eyebrow, size, EYEBROW_WEIGHT).width + 2 * EYEBROW_PADDING.x * size
+    let size = eyebrowSizeFor(fontSize)
+    while (size > EYEBROW_MIN_SIZE && tagWidth(size) > TEXT_AREA_WIDTH) size -= 1
+    const ink = measure(input.eyebrow, size, EYEBROW_WEIGHT)
+    eyebrow = {
+      text: input.eyebrow,
+      fontSize: size,
+      width: ink.width,
+      originOffset: ink.originOffset,
+      capHeight: measure('H', size, EYEBROW_WEIGHT).ascent || size * 0.7,
+    }
+    if (!overflow && tagWidth(size) > TEXT_AREA_WIDTH) overflow = 'eyebrow'
+  }
+
+  return {
+    labels,
+    widths: metrics.map((metric) => metric.width),
+    originOffsets: metrics.map((metric) => metric.originOffset),
+    ascent,
+    descent,
+    fontSize,
+    weight,
+    characterCount,
+    paragraphs: text ? text.split('\n').length : 0,
+    maxLines,
+    measureWidth,
+    overflow,
+    empty: !text,
+    eyebrow,
+    letterSpacing: Math.round(tracking * fontSize * 100) / 100,
+  }
+}
