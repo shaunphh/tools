@@ -69,3 +69,7 @@ After pushing to a new GitHub repository, choose **GitHub Actions** as the Pages
 - Ticket fields that are descriptive text rather than an absolute HTTP(S) URL are retained as source text but are not treated as URLs.
 - Missing time is shown as `TBC` rather than interpreted as an all-day event.
 - A row whose `STATUS` says Cancelled or Postponed is left out and listed with the ignored rows (5 Oct 2026); the website shows such events marked instead, so the row stays in the Sheet. Sold out still goes in.
+
+## In the tools repository
+
+Since 19 October 2026 the Event Guide lives in the alternative-dublin-tools repository with Guide Studio and Tape Type, served at shaunphh.github.io/tools/event-guide/, and wears the shared shell (packages/ad-shell): the masthead with the switcher is the markup in index.html, its chrome colours come from the ui tokens (vendor/ad-tokens.css, `--ad-ui-*`), and `vendor/` is generated from packages/ad-tape by scripts/vendor.mjs before every test and build instead of synced from another repository. The guide's own chrome was the model for the shell, so it changed least: the yellow is the brand's #ffed1f now (it was #f6cf24) and the masthead is 64px.

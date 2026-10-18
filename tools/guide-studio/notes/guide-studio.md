@@ -79,3 +79,7 @@ Approved type defaults: covers 196px Bold, −3% tracking and 85% line height; s
 Direct Google Docs/Sheets connections; automatic source refresh and conflict resolution; live co-editing (the team library, 18 October, is turn-taking with a sign-in); persistent version history; publishing global brand updates to the existing tools. This trial establishes the editor, page rendering and saved issue format before those integrations.
 
 The Instagram post mockup preview idea is recorded in `notes/decisions.md` for a later pass across this tool, Tape Type and Event-guide.
+
+## In the tools repository
+
+Since 19 October 2026 Guide Studio lives in the alternative-dublin-tools repository with the Event Guide and Tape Type, served at shaunphh.github.io/tools/guide-studio/ (the Supabase project's Site URL and Redirect URLs must say so). The tape engine and the tokens are imported from packages/ad-tape (`@ad/tape/...`) instead of copied by a sync script, and the top bar is the shared masthead from packages/ad-shell with the guide's name and the actions in its slots; the chrome colours come from the ui tokens. Guides saved in a browser stay in that browser, so the team opens the new address in the browser they used, or restores a backup.
