@@ -17,6 +17,7 @@
     />
     <link rel="stylesheet" href="vendor/ad-tokens.css" />
     <link rel="stylesheet" href="vendor/shell.css" />
+    <link rel="stylesheet" href="vendor/ui.css" />
     <link rel="stylesheet" href="styles.css" />
     <script
       defer
@@ -25,7 +26,7 @@
     <script defer src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
     <script type="module" src="app.js"></script>
   </head>
-  <body>
+  <body class="ad-ui">
     <!-- The shell every AD tool wears (packages/ad-shell): the same markup shell.ts writes for the other tools. -->
     <header class="ad-masthead">
       <a class="ad-masthead__home" href="../" aria-label="Alternative Dublin tools"><span class="ad-masthead__mark">Alternative Dublin</span><span class="ad-masthead__tools">Tools</span></a>
@@ -36,17 +37,17 @@
     </header>
 
     <main id="top" class="workspace">
-      <aside class="controls" aria-label="Guide controls">
-        <section class="panel source-panel" aria-labelledby="source-title">
+      <aside class="ad-rail controls" aria-label="Guide controls">
+        <section class="ad-panel panel source-panel" aria-labelledby="source-title">
           <div class="panel__heading">
             <div>
-              <span class="eyebrow">Source</span>
+              <span class="ad-eyebrow">Source</span>
               <h1 id="source-title">Weekly events</h1>
             </div>
-            <span id="source-badge" class="status-badge status-badge--loading">Connecting</span>
+            <span id="source-badge" class="ad-status">Connecting</span>
           </div>
 
-          <label class="number-field sheet-tab-field" for="sheet-gid">
+          <label class="ad-field sheet-tab-field" for="sheet-gid">
             <span>Google Sheet tab (GID)</span>
             <input
               id="sheet-gid"
@@ -61,14 +62,14 @@
           </label>
 
           <div class="source-actions">
-            <button id="load-sheet" class="button button--primary" type="button">
+            <button id="load-sheet" class="ad-btn ad-btn--dark" type="button">
               <span>Load Google Sheet</span>
             </button>
-            <button id="refresh-sheet" class="button button--icon" type="button" aria-label="Refresh data">
+            <button id="refresh-sheet" class="ad-btn ad-btn--icon" type="button" aria-label="Refresh data">
               ↻
             </button>
           </div>
-          <p id="source-message" class="source-message" role="status" aria-live="polite">
+          <p id="source-message" class="ad-hint source-message" role="status" aria-live="polite">
             Checking the public Sheet…
           </p>
 
@@ -91,7 +92,7 @@
             <div id="date-check" class="date-check" hidden>
               <strong>Date check required</strong>
               <p id="date-check-message"></p>
-              <label class="date-confirmation">
+              <label class="ad-check">
                 <input id="confirm-dates" type="checkbox" />
                 <span>I checked these source dates</span>
               </label>
@@ -106,24 +107,24 @@
                 <small>Google Sheets → File → Download → CSV</small>
               </label>
               <input id="csv-file" class="visually-hidden" type="file" accept=".csv,text/csv" />
-              <label class="field-label" for="csv-paste">Or paste CSV</label>
+              <label class="ad-label" for="csv-paste">Or paste CSV</label>
               <textarea
                 id="csv-paste"
                 rows="5"
                 placeholder="DATE,NAME,LOCATION,START TIME…"
                 spellcheck="false"
               ></textarea>
-              <button id="load-pasted-csv" class="button button--secondary" type="button">
+              <button id="load-pasted-csv" class="ad-btn" type="button">
                 Load pasted CSV
               </button>
             </div>
           </details>
         </section>
 
-        <section class="panel" aria-labelledby="days-title">
+        <section class="ad-panel panel" aria-labelledby="days-title">
           <div class="section-heading">
             <div>
-              <span class="eyebrow">Include</span>
+              <span class="ad-eyebrow">Include</span>
               <h2 id="days-title">Days</h2>
             </div>
             <div class="text-actions">
@@ -137,8 +138,8 @@
           </div>
         </section>
 
-        <section class="panel" aria-labelledby="layout-title">
-          <span class="eyebrow">Layout</span>
+        <section class="ad-panel panel" aria-labelledby="layout-title">
+          <span class="ad-eyebrow">Layout</span>
           <h2 id="layout-title">Page settings</h2>
 
           <fieldset class="segmented-field">
@@ -155,7 +156,7 @@
             </div>
           </fieldset>
 
-          <label id="manual-limit-field" class="number-field" for="manual-limit" hidden>
+          <label id="manual-limit-field" class="ad-field" for="manual-limit" hidden>
             <span>Maximum events per page</span>
             <input id="manual-limit" type="number" min="1" max="30" value="8" inputmode="numeric" />
             <small>Wrapped events still move early if they run out of room.</small>
@@ -176,19 +177,21 @@
           </fieldset>
 
           <div class="toggle-list">
-            <label class="toggle-row">
+            <label class="ad-switch">
               <span>
                 <strong>Show venue</strong>
                 <small>Secondary line</small>
               </span>
               <input id="show-venue" type="checkbox" checked />
+              <span class="ad-switch__track"></span>
             </label>
-            <label class="toggle-row">
+            <label class="ad-switch">
               <span>
                 <strong>Show Instagram</strong>
                 <small>Organiser handle</small>
               </span>
               <input id="show-instagram" type="checkbox" checked />
+              <span class="ad-switch__track"></span>
             </label>
           </div>
         </section>
@@ -198,10 +201,10 @@
           <h2 id="generation-title"><span id="selected-event-count">0</span> events <b>→</b> <span id="page-count">0</span> pages</h2>
           <p id="integrity-status" class="integrity-status">Waiting for event data</p>
           <div class="generation-actions">
-            <button id="generate-guide" class="button button--yellow" type="button" disabled>
+            <button id="generate-guide" class="ad-btn ad-btn--primary" type="button" disabled>
               Generate guide
             </button>
-            <button id="export-all" class="button button--dark-outline" type="button" disabled>
+            <button id="export-all" class="ad-btn" type="button" disabled>
               Export all (.zip)
             </button>
           </div>
@@ -209,10 +212,10 @@
         </section>
       </aside>
 
-      <section class="preview-area" aria-labelledby="preview-title">
+      <section class="ad-stage preview-area" aria-labelledby="preview-title">
         <div class="preview-heading">
           <div>
-            <span class="eyebrow">1080 × 1350 px</span>
+            <span class="ad-eyebrow">1080 × 1350 px</span>
             <h2 id="preview-title">Carousel preview</h2>
           </div>
           <span id="preview-page-count" class="preview-count">No pages</span>

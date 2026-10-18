@@ -1,1 +1,13 @@
-{ "name": "@ad/shell", "version": "1.0.0", "private": true, "type": "module", "description": "The masthead and chrome every Alternative Dublin tool shares: shell.css and shell.ts (masthead markup, the ui tokens as custom properties).", "exports": { "./shell": "./shell.ts", "./shell.css": "./shell.css" } }
+{
+  "name": "@ad/shell",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "The masthead, the chrome and the UI kit every Alternative Dublin tool shares: shell.css/shell.ts (masthead, ui tokens on the page) and ui.css/ui.ts (buttons, fields, switches, surfaces, dialogs, toasts).",
+  "exports": {
+    "./shell": "./shell.ts",
+    "./shell.css": "./shell.css",
+    "./ui": "./ui.ts",
+    "./ui.css": "./ui.css"
+  }
+}

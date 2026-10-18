@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="theme-color" content="#101010">
+<title>UI kit — Alternative Dublin tools</title>
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="board.css"><link rel="stylesheet" href="shell.css"><link rel="stylesheet" href="ui.css">
+<style>
+  .kit { max-width: 1100px; margin: 0 auto; padding: 28px 24px 60px; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+  .kit > section { background: var(--ad-ui-panel, #fbfbf7); border: 1px solid var(--ad-ui-line, #d6d6cf); border-radius: 8px; padding: 20px 22px; }
+  .kit h2 { font-size: 13px; font-weight: 600; margin: 0 0 14px; }
+  .kit .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 10px; }
+  .kit .stage-sample { height: 90px; border-radius: 6px; display: grid; place-items: center; font-size: 12px; color: #74746d; }
+  .kit dialog.inline { position: static; display: block; margin: 0; width: auto; max-width: none; box-shadow: none; }
+</style>
+</head>
+<body class="ad-ui">
+<header class="ad-masthead"><a class="ad-masthead__home" href="../../" aria-label="Alternative Dublin tools"><span class="ad-masthead__mark">Alternative Dublin</span><span class="ad-masthead__tools">Tools</span></a><nav class="ad-masthead__switch" aria-label="Tools"><a href="../../event-guide/">Event Guide</a><a href="../../guide-studio/">Guide Studio</a><a href="../">Tape Type</a><a href="./">Board</a><a href="ui.html" aria-current="page">UI kit</a></nav><div class="ad-masthead__tool"><p class="ad-masthead__note">Every part of the kit, in every state, from the ui tokens</p></div><div class="ad-masthead__actions"><button class="ad-btn ad-btn--primary" type="button">Export</button></div></header>
+<main class="kit">
+  <section><h2>Buttons</h2>
+    <div class="row"><button class="ad-btn ad-btn--primary">Export guide</button><button class="ad-btn ad-btn--dark">Load the Sheet</button><button class="ad-btn">Secondary</button><button class="ad-btn ad-btn--quiet">Quiet</button></div>
+    <div class="row"><button class="ad-btn ad-btn--icon" aria-label="Refresh">↻</button><button class="ad-btn ad-btn--sm">Small</button><button class="ad-btn ad-btn--sm ad-btn--icon" aria-label="More">…</button><button class="ad-btn ad-btn--danger">Remove story</button><button class="ad-btn ad-btn--link">Use house picture height</button><button class="ad-btn" disabled>Disabled</button></div>
+  </section>
+  <section><h2>Fields</h2>
+    <label class="ad-field"><span>Headline</span><input value="Light House Cinema plans major Smithfield expansion"><small>Line breaks are kept in the cover.</small></label>
+    <label class="ad-field"><span>Story</span><textarea rows="3">The Light House has applied for two new screens.</textarea><small><span class="ad-count">88 words</span> · Select words to add emphasis.</small></label>
+    <div class="ad-field-pair"><label class="ad-field"><span>Date</span><input placeholder="6 Oct"></label><label class="ad-field"><span>Time</span><input placeholder="8:30pm"></label></div>
+    <label class="ad-field ad-field--locked"><span>Picture height</span><input value="500px" disabled><small>Fixed by the house style.</small></label>
+    <label class="ad-field"><span>Export resolution</span><select><option>1× PNG</option><option>2× PNG</option></select></label>
+  </section>
+  <section><h2>Ranges, switches, checks</h2>
+    <label class="ad-range"><span>Story text size<output>38px</output></span><input type="range" min="34" max="44" value="38"></label>
+    <label class="ad-switch"><span>Partner post <small>For partnerships and special posts only</small></span><input type="checkbox"><span class="ad-switch__track"></span></label>
+    <label class="ad-switch"><span>Darken photo</span><input type="checkbox" checked><span class="ad-switch__track"></span></label>
+    <label class="ad-check"><input type="checkbox" checked> <span>Offer this photo for the cover<small>Turn off for posters and images with large text.</small></span></label>
+    <label class="ad-check"><input type="checkbox"> <span>I checked these source dates</span></label>
+  </section>
+  <section><h2>One of many</h2>
+    <div class="row"><div class="ad-segmented"><button class="active">Picks</button><button>What's new</button></div><div class="ad-segmented"><button>Clear</button><button class="active">Dark</button><button>Yellow</button><button disabled>Ghost</button></div></div>
+    <div class="ad-chips"><button class="ad-chip active">Mon 14</button><button class="ad-chip">Tue 15</button><button class="ad-chip">Wed 16</button><button class="ad-chip">Thu 17</button></div>
+  </section>
+  <section><h2>Headings and words for a state</h2>
+    <span class="ad-eyebrow">The first impression</span>
+    <div class="ad-section"><h3>Cover photos</h3><span>2 images</span></div>
+    <p class="ad-hint">Or drop an image on this button, on the page or on the story's card.</p>
+    <p class="ad-hint ad-hint--ok">Everything fits. Ready when you are.</p>
+    <p class="ad-hint ad-hint--warn">About 12 words over the 80 to 90 a page holds.</p>
+    <p class="ad-hint ad-hint--bad">The story runs into the footer. Shorten the copy.</p>
+    <div class="row"><span class="ad-status ad-status--ok">Sheet connected</span><span class="ad-status ad-status--warn">Date check required</span><span class="ad-status ad-status--bad">Export failed</span><span class="ad-status">Connecting</span><span class="ad-tag">On the website</span></div>
+    <hr class="ad-rule">
+    <div class="ad-note ad-note--warn"><strong>Date check required</strong><br>14–20 Sep 2026. These dates are more than two weeks in the past. Confirm before exporting.</div>
+  </section>
+  <section><h2>Surfaces</h2>
+    <div class="row"><div class="ad-rail stage-sample" style="flex:1">rail</div><div class="ad-stage stage-sample" style="flex:2">stage</div><div class="ad-inspector stage-sample" style="flex:1">inspector</div></div>
+    <div class="ad-empty"><strong>No pages yet</strong>Load the Sheet or paste a CSV and the week appears here.</div>
+    <div class="ad-list" style="margin-top:12px"><button><span class="ad-tag">Picks</span><span><strong>October picks</strong><small>6 pages · saved by shaun · on the website</small></span><span class="ad-tag">Open</span></button></div>
+  </section>
+  <section><h2>Dialog and toast</h2>
+    <dialog class="ad-dialog inline" open><div class="ad-dialog__head"><div><span class="ad-eyebrow">Guide Studio</span><h2>The team copy has moved on</h2></div><button class="ad-btn ad-btn--quiet ad-btn--icon" aria-label="Close">×</button></div><div class="ad-dialog__body"><p class="ad-muted"><b>jack · Sat 18 Oct 20:05</b> saved this guide after you took your copy. Overwrite the team copy with yours, or keep yours as a guide of its own.</p></div><div class="ad-dialog__foot"><button class="ad-btn">Keep mine as a copy</button><button class="ad-btn ad-btn--primary">Overwrite</button></div></dialog>
+    <div class="row" style="margin-top:14px"><span class="ad-toast" style="position:static;transform:none;animation:none">Saved to the team: “October picks”.</span><span class="ad-toast ad-toast--error" style="position:static;transform:none;animation:none">Couldn't save to the team: the row moved on.</span></div>
+  </section>
+</main>
+<script>document.documentElement.classList.add('ad-ui')</script>
+</body>
+</html>

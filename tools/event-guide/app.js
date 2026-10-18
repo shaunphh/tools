@@ -120,10 +120,10 @@ const DOM = {
 let generationTimer = 0;
 
 function setSourceState(kind, badge, message) {
-  DOM.sourceBadge.className = `status-badge status-badge--${kind}`;
+  DOM.sourceBadge.className = `ad-status ${{ success: "ad-status--ok", error: "ad-status--bad" }[kind] ?? ""}`;
   DOM.sourceBadge.textContent = badge;
   DOM.sourceMessage.textContent = message;
-  DOM.sourceMessage.classList.toggle("source-message--error", kind === "error");
+  DOM.sourceMessage.classList.toggle("ad-hint--bad", kind === "error");
 }
 
 function parseSheetGid(value) {
@@ -258,7 +258,7 @@ function renderDayFilters() {
   const groups = groupEventsByDay(state.events);
   if (!groups.length) {
     const note = document.createElement("span");
-    note.className = "muted";
+    note.className = "ad-hint";
     note.textContent = "No valid days found.";
     DOM.dayFilters.appendChild(note);
     return;
@@ -266,7 +266,7 @@ function renderDayFilters() {
 
   groups.forEach((group) => {
     const label = document.createElement("label");
-    label.className = "day-filter";
+    label.className = "ad-chip";
     const input = document.createElement("input");
     input.type = "checkbox";
     input.value = group.key;
@@ -606,7 +606,7 @@ function renderPages(settings) {
   DOM.previewGrid.replaceChildren();
   if (!state.pages.length) {
     const empty = document.createElement("div");
-    empty.className = "empty-state";
+    empty.className = "ad-empty empty-state";
     const number = document.createElement("span");
     number.className = "empty-state__number";
     number.textContent = "00";
@@ -652,24 +652,24 @@ function updateSummary(selectedEvents) {
   DOM.previewPageCount.textContent = state.pages.length ? `${state.pages.length} pages` : "No pages";
   syncExportControls();
 
-  DOM.integrityStatus.className = "integrity-status";
+  DOM.integrityStatus.className = "ad-hint integrity-status";
   if (!selectedEvents.length) {
     DOM.integrityStatus.textContent = "Select one or more days to generate pages.";
   } else if (state.integrity?.passed) {
     if (state.dateRisk?.requiresConfirmation && !state.datesConfirmed) {
       DOM.integrityStatus.textContent = `✓ All ${state.integrity.rendered} events fit · confirm source dates to export`;
-      DOM.integrityStatus.classList.add("integrity-status--warning");
+      DOM.integrityStatus.classList.add("ad-hint--warn");
     } else {
       DOM.integrityStatus.textContent = `✓ All ${state.integrity.rendered} selected events rendered once · ${formatRefreshTime(state.generatedAt ?? new Date())}`;
-      DOM.integrityStatus.classList.add("integrity-status--passed");
+      DOM.integrityStatus.classList.add("ad-hint--ok");
     }
   } else if (state.integrity?.layoutOverflowPages?.length) {
     const pages = state.integrity.layoutOverflowPages.map((index) => index + 1).join(", ");
     DOM.integrityStatus.textContent = `Layout overflow on page ${pages}; export is disabled`;
-    DOM.integrityStatus.classList.add("integrity-status--failed");
+    DOM.integrityStatus.classList.add("ad-hint--bad");
   } else {
     DOM.integrityStatus.textContent = `Check failed: ${state.integrity?.rendered || 0} of ${selectedEvents.length} events rendered`;
-    DOM.integrityStatus.classList.add("integrity-status--failed");
+    DOM.integrityStatus.classList.add("ad-hint--bad");
   }
 }
 
