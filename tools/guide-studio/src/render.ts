@@ -346,7 +346,8 @@ function drawCover(ctx: CanvasRenderingContext2D, issue: Issue, brand: Brand, as
 
   const shape = buildShape({ ...defaults, fontSize:size, align:'left', mode:'rough', lineGap:lineStep-ascent-descent, hugStrength:1, seed:18473562 }, labels, labels.map(() => maxWidth), [], { ascent, descent })
   const box = shape.viewBox
-  const background = c.backgrounds[issue.series] || { x,y,width,height }
+  const customBackground = designUnlocked() ? c.backgrounds[issue.series] : null
+  const background = customBackground || { x,y,width,height }
   // The cut is drawn upside down: its wider strip runs under the last line, so the block stands on it.
   ctx.save(); ctx.translate(background.x,background.y+background.height); ctx.scale(background.width/box.width,-background.height/box.height); ctx.translate(-box.x,-box.y)
   ctx.fillStyle = isNew ? brand.yellow : brand.light; ctx.fill(new Path2D(shape.path)); ctx.restore()
@@ -372,7 +373,7 @@ function drawCover(ctx: CanvasRenderingContext2D, issue: Issue, brand: Brand, as
   // hand stays where it was put, so a headline that grows afterwards can end up tight against its edges, as a posted
   // What's New cover did. The house box gives 82 at the sides, 59 above and 64 below.
   const room = { left: Math.round(x + padX - background.x), right: Math.round(background.x + background.width - (x + padX + maxWidth)), top: Math.round(y + padTop - background.y), bottom: Math.round(background.y + background.height - (y + height - padBottom - subHeight)) }
-  return { background, headline: { x, y, width, height }, cover: { handSet: !!c.backgrounds[issue.series], room } }
+  return { background, headline: { x, y, width, height }, cover: { handSet: !!customBackground, room } }
 }
 
 export async function preparePhoto(file: File): Promise<string> {

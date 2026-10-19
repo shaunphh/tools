@@ -24,7 +24,7 @@ npm run build          # dist/: the whole site under /tools/ (SITE_BASE to chang
 npm run dev:guide-studio   npm run dev:tape-type   npm run dev:event-guide
 ```
 
-The board is a development-only reference at Tape Type’s `/board/`; it is omitted from the Pages build. Design controls use the shared house values by default. Guide Studio’s House style and Tape Type’s held controls are available only in an explicit `?unlocked` design session; restoring a guide backup cannot change the locked house style.
+The board is a development-only reference at Tape Type’s `/board/`; it is omitted from the Pages build. Design controls use the shared house values by default. Guide Studio’s House style and manual tape-background sizing, and Tape Type’s held controls are available only in an explicit `?unlocked` design session; restoring a guide backup cannot change the locked house style.
 
 A token change is one edit in `packages/ad-tape/src/ad-tokens.json`; every tool and the board follow. The news site (a separate repository, alternative-dublin) takes the tokens and the geometry from this repository with its own sync script.
 

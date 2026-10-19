@@ -136,7 +136,7 @@ function restoreView(kept: ReturnType<typeof keepView>) {
 
 function renderShell() {
   // House style is a design session's (?unlocked); the tool keeps to the shared tokens otherwise.
-  if(panel==='style'&&!designUnlocked())panel='edit'
+  if(!designUnlocked()){if(panel==='style')panel='edit';boundsMode=false}
   const kept = keepView()
   boundsObserver?.disconnect()
   app.innerHTML = `${masthead('guide-studio', { title: 'Guide Studio: Event Guide Picks and What’s New carousels', tool: `<div class="issue-heading"><input id="issue-name" aria-label="Guide name" value="${escape(issue().name)}"><div id="save-state" class="save-state"></div></div>`, actions: `<div class="top-actions"><button id="library" class="ad-btn ad-btn--quiet" title="My guides">${icon('file')} My guides</button><button id="backup" class="ad-btn ad-btn--quiet backup-button" title="Backup">${icon('down')} Backup</button>${designUnlocked()?`<button id="house-style" class="ad-btn ad-btn--quiet ${panel==='style'?'selected':''}" title="House style">${icon('sliders')} House style</button>`:''}<button id="import" class="ad-btn ad-btn--quiet" title="Import copy">${icon('upload')} Import copy</button>${teamConfigured()?`<label class="publish" title="Published guides' stories go to the website at its next build. Tick, then Save to team."><input type="checkbox" id="published" ${issue().published?'checked':''}> Published</label><button id="team" class="ad-btn ad-btn--quiet" title="${teamUser?'Save this guide to the team library':'Sign in to the team library'}">${icon(teamUser?'upload':'user')} ${teamUser?'Save to team':'Sign in'}</button>`:''}<label class="resolution"><select id="export-scale" aria-label="Export resolution"><option value="1" ${exportScale===1?'selected':''}>1× PNG</option><option value="2" ${exportScale===2?'selected':''}>2× PNG</option></select></label><button id="export" class="ad-btn ad-btn--primary">${icon('down')} Export guide</button></div>` })}
@@ -180,7 +180,7 @@ function activeBounds() {
   return issue().cover.backgrounds[issue().series] || (lastBoundsKey===`${issue().id}:${issue().series}`?lastCoverBounds:undefined)
 }
 function boundsPanel() {
-  return `<div class="bounds-panel"><button id="toggle-bounds" class="ad-btn" aria-pressed="${boundsMode}">${boundsMode?'Hide bounding box':'Adjust tape background'}</button><p id="box-note" class="ad-hint"></p>
+  return `<div class="bounds-panel"><button id="toggle-bounds" class="ad-btn" aria-pressed="${boundsMode}" ${designUnlocked()?'':'disabled title="Fixed by the house style"'}>${boundsMode?'Hide bounding box':'Adjust tape background'}</button><p id="box-note" class="ad-hint"></p>
   ${boundsMode?`<p class="ad-hint">Drag the box to move the background, or use its handles to resize. The headline stays in place. Measurements are on the 1080 × 1350 canvas.</p><div class="bounds-fields">${(['x','y','width','height'] as const).map((key,i)=>`<label class="ad-field"><span>${['X · left','Y · top','Width','Height'][i]}</span><input type="number" data-bounds="${key}" aria-label="Background ${key}" step="1" min="${i<2?0:100}" max="${key==='x'||key==='width'?1080:1350}"></label>`).join('')}</div><textarea id="bounds-values" aria-label="Background values" readonly rows="2"></textarea><div class="bounds-actions"><button id="copy-bounds" class="ad-btn ad-btn--link">Copy values</button><button id="reset-bounds" class="ad-btn ad-btn--link">Reset this background</button></div><p class="ad-hint">Each series keeps its own background. The outline and handles stay out of exports.</p>`:''}</div>`
 }
 function syncBounds() {
@@ -199,6 +199,7 @@ function syncBounds() {
   if(values)values.value=`${seriesName(issue().series)} — headline background\nX: ${rounded.x}px; Y: ${rounded.y}px; Width: ${rounded.width}px; Height: ${rounded.height}px`
 }
 function bindBounds() {
+  if(!designUnlocked())return
   get('toggle-bounds')?.addEventListener('click',()=>{boundsMode=!boundsMode;renderShell();syncBounds()})
   get('reset-bounds')?.addEventListener('click',()=>change('reset-bounds',()=>{issue().cover.backgrounds[issue().series]=null}))
   get('copy-bounds')?.addEventListener('click',async()=>{
