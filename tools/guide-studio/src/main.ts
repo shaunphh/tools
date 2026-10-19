@@ -20,7 +20,7 @@ let library: Library
 /** The team library (team.ts), loaded only when someone signs in; who is signed in, by email. */
 let teamUser: string | null = null, teamModule: Promise<typeof import('./team')> | null = null
 const team = () => (teamModule ??= import('./team'))
-let previewMode: PreviewMode = 'auto', previewController: ReturnType<typeof attachPreview> | undefined
+let previewMode: PreviewMode = 'fit', previewController: ReturnType<typeof attachPreview> | undefined
 let selected = 'cover', panel: 'edit'|'style' = 'edit', overview = false, coverSlot = 0, exportScale = 1
 let saving = false, saveFailed = false, saveTimer: number, renderToken = 0, historyAt = 0, historyKey = '', lastHistoryTime = 0, busy = false
 let history: { issue: Issue; brand: Brand; selected: string }[] = []

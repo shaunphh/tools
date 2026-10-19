@@ -990,5 +990,6 @@ body.is-exporting #export-all {
 .preview-heading #preview-scale { margin-left: auto; }
 .preview-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%,var(--ad-preview-page-width,432px)),1fr)); }
 .page-card__viewport.ad-preview-viewport { height: var(--ad-preview-page-height,540px); max-width: 100%; overflow: clip; }
+.page-card__viewport[data-preview-mode="zoom"] { overflow: auto; }
 .page-frame.ad-preview-surface { width: auto; }
 @media(max-width:480px){.preview-heading #preview-scale{margin-left:0}.preview-heading{flex-direction:row}}

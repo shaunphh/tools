@@ -702,7 +702,7 @@ function App() {
   const [panels, setPanels] = useState<Record<PanelId, boolean>>(loadPanels)
   const previewRef = useRef<HTMLDivElement>(null)
   const previewViewportRef = useRef<HTMLDivElement>(null)
-  const [previewMode, setPreviewMode] = useState<PreviewMode>('auto')
+  const [previewMode, setPreviewMode] = useState<PreviewMode>('fit')
   const bodyRef = useRef<HTMLTextAreaElement>(null)
   const detailsRef = useRef<HTMLTextAreaElement>(null)
   const dragRef = useRef<Drag | null>(null)
@@ -2046,7 +2046,7 @@ function App() {
               </button>
             ))}
           </div>
-          <div className="ad-preview-controls"><div className="ad-segmented" role="group" aria-label="Preview scale"><button type="button" aria-pressed={previewMode==='auto'} title="25% larger than Fit" onClick={()=>setPreviewMode('auto')}>Auto</button><button type="button" aria-pressed={previewMode==='fit'} onClick={()=>setPreviewMode('fit')}>Fit</button><button type="button" aria-pressed={previewMode==='instagram'} title="Phone-width Instagram preview (390px)" onClick={()=>setPreviewMode('instagram')}>Instagram</button></div></div></div>
+          <div className="ad-preview-controls"><div className="ad-segmented" role="group" aria-label="Preview scale"><button type="button" aria-pressed={previewMode==='fit'} title="Automatically fit the preview" onClick={()=>setPreviewMode('fit')}>Fit</button><button type="button" aria-pressed={previewMode==='zoom'} title="20% larger than Fit" onClick={()=>setPreviewMode('zoom')}>1.2×</button></div></div></div>
           {/* An inside page has no use for these, but keeps their room, so it is shown as large as a cover. */}
           <div className={isInside ? 'preview-toolbar spacer' : 'preview-toolbar'} aria-hidden={isInside || undefined}>
             <div className="background-switcher" role="group" aria-label="Preview background">

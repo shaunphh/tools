@@ -12,18 +12,20 @@ describe('shared preview scale', () => {
     expect(event.width).toBe(336)
     expect(event.height).toBe(420)
   })
-  it('shows Instagram at phone width, constrained by narrow screens', () => {
-    expect(previewSize({ ...post, mode: 'instagram', availableWidth: 280, availableHeight: 300 })).toEqual({ width: 280, height: 350, scale: 280 / 1080 })
-    const video = previewSize({ ...post, mode: 'instagram', height: 1920, availableWidth: 800, availableHeight: 300 })
-    expect(video.width).toBe(390)
-    expect(video.width / video.height).toBeCloseTo(9 / 16)
+  it('zooms videos by the same amount without changing their shape', () => {
+    const fit = previewSize({ ...post, height: 1920, availableWidth: 800, availableHeight: 420 })
+    const zoom = previewSize({ ...post, mode: 'zoom', height: 1920, availableWidth: 800, availableHeight: 420 })
+    expect(zoom.width / fit.width).toBeCloseTo(1.2)
+    expect(zoom.height / fit.height).toBeCloseTo(1.2)
+    expect(zoom.width / zoom.height).toBeCloseTo(9 / 16)
   })
-  it('makes Auto 25% larger without changing the artwork ratio', () => {
-    const size = previewSize({ ...post, mode: 'auto', availableWidth: 800, availableHeight: 420 })
-    expect(size.width).toBe(420)
-    expect(size.height).toBe(525)
-    const narrow = previewSize({ ...post, mode: 'auto', viewportWidth: 390, availableWidth: 240, availableHeight: 330 })
-    expect(narrow.width).toBe(240)
+  it('zooms 20% beyond Fit, including when the fitted view fills a narrow screen', () => {
+    const size = previewSize({ ...post, mode: 'zoom', availableWidth: 800, availableHeight: 420 })
+    expect(size.width).toBeCloseTo(403.2)
+    expect(size.height).toBeCloseTo(504)
+    const narrow = previewSize({ ...post, mode: 'zoom', viewportWidth: 390, availableWidth: 240, availableHeight: 330 })
+    expect(narrow.width).toBeCloseTo(288)
+    expect(narrow.height).toBeCloseTo(360)
   })
   it('fits a video without stretching it into a post', () => {
     const size = previewSize({ ...post, height: 1920, availableWidth: 800, availableHeight: 420 })

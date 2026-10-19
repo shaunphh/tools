@@ -118,7 +118,7 @@ const DOM = {
   exportStage: byId("export-stage"),
 };
 
-let previewMode = 'auto';
+let previewMode = 'fit';
 let previewControllers = [];
 function layoutPreviewGrid() {
   const area = DOM.previewGrid.parentElement;
