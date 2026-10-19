@@ -46,6 +46,10 @@ describe('locked choices', () => {
 
   it('gives a post the rough cut and a video the tape cut as their house cuts, once, and leaves the choice open after', () => {
     expect(POST_LOOK.treatment.mode).toBe('rough')
+    // The Feature style, and so a Partner post, in the Rough cut too (19 October 2026).
+    expect(stylePresets.feature.mode).toBe('rough')
+    expect(PARTNER_LOOK.treatment.mode).toBe('rough')
+    expect(withHouseCut({ ...defaults, ...PARTNER_LOOK.treatment, mode: 'torn' }, PARTNER_LOOK, true).mode).toBe('rough')
     expect(Object.values(VIDEO_LOOKS).map((look) => look.treatment.mode)).toEqual(['tape', 'tape', 'tape'])
     expect(withHouseCut({ ...defaults, mode: 'plain' }, VIDEO_LOOKS.presenter, true).mode).toBe('tape')
     const kept = new Map<string, string>()

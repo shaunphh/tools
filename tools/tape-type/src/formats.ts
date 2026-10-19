@@ -89,7 +89,7 @@ export const PARTNER_LOOK: Look = {
   description: 'Capitals · loose strips',
   style: 'feature',
   coverFormat: 'regular',
-  treatment: { ...stylePresets.feature, mode: 'rough', align: 'left', hugStrength: 1.04, rotationVariance: 2.8, lineGap: 13, gapVariance: 18, stagger: 10 },
+  treatment: { ...stylePresets.feature, align: 'left', hugStrength: 1.04, rotationVariance: 2.8, lineGap: 13, gapVariance: 18, stagger: 10 },
   tapes: withGhost('light'),
   eyebrow: 'Partner',
   aligns: ['center'],

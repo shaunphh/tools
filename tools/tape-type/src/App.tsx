@@ -109,7 +109,7 @@ import type { CoverStyle, GeneratorSettings, ShapeMode, TextAlign } from '@ad/ta
 
 const styles: { value: CoverStyle; label: string; description: string }[] = [
   { value: 'headline', label: 'Headline', description: 'Title Case · block or strips' },
-  { value: 'feature', label: 'Feature', description: 'All caps · torn strips' },
+  { value: 'feature', label: 'Feature', description: 'All caps · rough-cut strips' },
 ]
 
 /** Quick labels for the eyebrow. A Partner post's say what it is. */

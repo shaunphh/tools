@@ -411,6 +411,11 @@
         "usage": "Every tag (eyebrows, labels, page numbers, time tags): Tape Type's clean cut, each with its own seed, the foot kept flat where a tag sits on tape. Since 18 October 2026 the cut only adds (`cutOutside` in the geometry): the tape keeps its padding whole, and the cut's room is tape added beyond it."
       },
       {
+        "name": "cut-feature",
+        "value": "rough",
+        "usage": "Feature-style covers, so Partner posts: each strip in the Rough cut (19 October 2026; Torn until then). Tape Type gives every browser that remembered the old cut the new one once (house-cut key v3)."
+      },
+      {
         "name": "cut-video",
         "value": "tape",
         "usage": "Video covers start with the Tape cut."

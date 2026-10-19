@@ -37,8 +37,9 @@ export type Treatment = Pick<GeneratorSettings, (typeof TREATMENT_KEYS)[number]>
 export const stylePresets: Record<CoverStyle, Treatment> = {
   // Most published headline covers are one plain rectangle of tape, left aligned, in a narrow column.
   headline: { perLine: false, tone: 'light', align: 'left', mode: 'plain', column: 'narrow', hugStrength: 1, rotationVariance: 0, lineGap: 2, stagger: 0, gapVariance: 0 },
-  // Feature covers: capitals on separate torn strips, centred, slightly turned, with gaps between.
-  feature: { perLine: true, tone: 'light', align: 'center', mode: 'torn', column: 'wide', hugStrength: 1, rotationVariance: 0.6, lineGap: 12, stagger: 0, gapVariance: 0 },
+  // Feature covers: capitals on separate strips, centred, slightly turned, with gaps between, in the
+  // Rough cut (Shaun, 19 October 2026; Torn until then).
+  feature: { perLine: true, tone: 'light', align: 'center', mode: 'rough', column: 'wide', hugStrength: 1, rotationVariance: 0.6, lineGap: 12, stagger: 0, gapVariance: 0 },
 }
 
 export const defaults: GeneratorSettings = {
