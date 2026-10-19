@@ -12,9 +12,18 @@ describe('shared preview scale', () => {
     expect(event.width).toBe(336)
     expect(event.height).toBe(420)
   })
-  it('keeps 100% at native artwork size even in a small viewport', () => {
-    expect(previewSize({ ...post, mode: 'actual', availableWidth: 280, availableHeight: 300 })).toEqual({ width: 1080, height: 1350, scale: 1 })
-    expect(previewSize({ ...post, mode: 'actual', height: 1920, availableWidth: 280, availableHeight: 300 })).toEqual({ width: 1080, height: 1920, scale: 1 })
+  it('shows Instagram at phone width, constrained by narrow screens', () => {
+    expect(previewSize({ ...post, mode: 'instagram', availableWidth: 280, availableHeight: 300 })).toEqual({ width: 280, height: 350, scale: 280 / 1080 })
+    const video = previewSize({ ...post, mode: 'instagram', height: 1920, availableWidth: 800, availableHeight: 300 })
+    expect(video.width).toBe(390)
+    expect(video.width / video.height).toBeCloseTo(9 / 16)
+  })
+  it('makes Auto 25% larger without changing the artwork ratio', () => {
+    const size = previewSize({ ...post, mode: 'auto', availableWidth: 800, availableHeight: 420 })
+    expect(size.width).toBe(420)
+    expect(size.height).toBe(525)
+    const narrow = previewSize({ ...post, mode: 'auto', viewportWidth: 390, availableWidth: 240, availableHeight: 330 })
+    expect(narrow.width).toBe(240)
   })
   it('fits a video without stretching it into a post', () => {
     const size = previewSize({ ...post, height: 1920, availableWidth: 800, availableHeight: 420 })

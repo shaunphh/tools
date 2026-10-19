@@ -20,7 +20,7 @@ let library: Library
 /** The team library (team.ts), loaded only when someone signs in; who is signed in, by email. */
 let teamUser: string | null = null, teamModule: Promise<typeof import('./team')> | null = null
 const team = () => (teamModule ??= import('./team'))
-let previewMode: PreviewMode = 'fit', previewController: ReturnType<typeof attachPreview> | undefined
+let previewMode: PreviewMode = 'auto', previewController: ReturnType<typeof attachPreview> | undefined
 let selected = 'cover', panel: 'edit'|'style' = 'edit', overview = false, coverSlot = 0, exportScale = 1
 let saving = false, saveFailed = false, saveTimer: number, renderToken = 0, historyAt = 0, historyKey = '', lastHistoryTime = 0, busy = false
 let history: { issue: Issue; brand: Brand; selected: string }[] = []
@@ -279,7 +279,7 @@ function stylePanel() {
 
 function bindShell() {
   if(!overview){
-    previewController=attachPreview({viewport:get('artboard-area'),surface:document.querySelector<HTMLElement>('.artboard-wrap')!,width:WIDTH,height:HEIGHT,mode:previewMode,onResize:size=>{const output=document.querySelector('[data-preview-percent]');if(output)output.textContent=`${Math.round(size.scale*100)}%`;scheduleRender();syncBounds()}})
+    previewController=attachPreview({viewport:get('artboard-area'),surface:document.querySelector<HTMLElement>('.artboard-wrap')!,width:WIDTH,height:HEIGHT,mode:previewMode,onResize:()=>{scheduleRender();syncBounds()}})
     document.querySelectorAll<HTMLButtonElement>('[data-preview-mode]').forEach(button=>button.onclick=()=>{previewMode=button.dataset.previewMode as PreviewMode;previewController?.setMode(previewMode);document.querySelectorAll('[data-preview-mode]').forEach(b=>b.setAttribute('aria-pressed',String((b as HTMLElement).dataset.previewMode===previewMode)))})
   }
 

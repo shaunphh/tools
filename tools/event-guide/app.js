@@ -118,15 +118,15 @@ const DOM = {
   exportStage: byId("export-stage"),
 };
 
-let previewMode = 'fit';
+let previewMode = 'auto';
 let previewControllers = [];
 function layoutPreviewGrid() {
   const area = DOM.previewGrid.parentElement;
   const style = getComputedStyle(area);
   const width = area.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
-  const size = previewSize({mode:'fit',width:DESIGN.pageWidth,height:DESIGN.pageHeight,availableWidth:width,availableHeight:Math.max(180,window.innerHeight-300),viewportWidth:window.innerWidth,viewportHeight:window.innerHeight});
+  const size = previewSize({mode:previewMode,width:DESIGN.pageWidth,height:DESIGN.pageHeight,availableWidth:width,availableHeight:Math.max(180,window.innerHeight-300),viewportWidth:window.innerWidth,viewportHeight:window.innerHeight});
   DOM.previewGrid.style.setProperty('--ad-preview-page-width', `${size.width}px`);
-  DOM.previewGrid.classList.toggle('preview-grid--actual', previewMode === 'actual');
+  DOM.previewGrid.style.setProperty('--ad-preview-page-height', `${size.height}px`);
 }
 function setupPreviewControls() {
   const controls = byId('preview-scale');
@@ -581,7 +581,7 @@ function paginateByRenderedHeight(events, settings) {
 }
 
 function scalePageFrame(frame) {
-  const scale = frame.clientWidth / DESIGN.pageWidth;
+  const scale = frame.getBoundingClientRect().width / DESIGN.pageWidth;
   frame.style.height = `${DESIGN.pageHeight * scale}px`;
   frame.querySelector(".guide-page")?.style.setProperty("--preview-scale", String(scale));
 }
@@ -666,7 +666,7 @@ function renderPages(settings) {
     viewport.appendChild(frame);
     card.append(toolbar, viewport);
     DOM.previewGrid.appendChild(card);
-    previewControllers.push(attachPreview({viewport,surface:frame,width:DESIGN.pageWidth,height:DESIGN.pageHeight,mode:previewMode,onResize:size=>{scalePageFrame(frame);const output=byId('preview-scale').querySelector('[data-preview-percent]');if(output)output.textContent=`${Math.round(size.scale*100)}%`}}));
+    previewControllers.push(attachPreview({viewport,surface:frame,width:DESIGN.pageWidth,height:DESIGN.pageHeight,mode:previewMode,availableHeight:()=>Math.max(180,window.innerHeight-300),onResize:()=>scalePageFrame(frame)}));
     scalePageFrame(frame);
     frameObserver.observe(frame);
   });

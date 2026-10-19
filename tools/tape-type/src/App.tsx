@@ -702,8 +702,7 @@ function App() {
   const [panels, setPanels] = useState<Record<PanelId, boolean>>(loadPanels)
   const previewRef = useRef<HTMLDivElement>(null)
   const previewViewportRef = useRef<HTMLDivElement>(null)
-  const [previewMode, setPreviewMode] = useState<PreviewMode>('fit')
-  const [displayScale, setDisplayScale] = useState(40)
+  const [previewMode, setPreviewMode] = useState<PreviewMode>('auto')
   const bodyRef = useRef<HTMLTextAreaElement>(null)
   const detailsRef = useRef<HTMLTextAreaElement>(null)
   const dragRef = useRef<Drag | null>(null)
@@ -720,7 +719,7 @@ function App() {
   useEffect(() => {
     const viewport=previewViewportRef.current, surface=previewRef.current
     if(!viewport||!surface)return
-    const controller=attachPreview({viewport,surface,width:frame.width,height:frame.height,mode:previewMode,onResize:size=>setDisplayScale(Math.round(size.scale*100))})
+    const controller=attachPreview({viewport,surface,width:frame.width,height:frame.height,mode:previewMode})
     return ()=>controller.destroy()
   }, [frame.width,frame.height,previewMode])
   const fileStem = cover.kind === 'video' ? 'tape-type-video-cover' : isInside ? 'tape-type-instagram-page-2' : 'tape-type-instagram'
@@ -2047,7 +2046,7 @@ function App() {
               </button>
             ))}
           </div>
-          <div className="ad-preview-controls"><div className="ad-segmented" role="group" aria-label="Preview scale"><button type="button" aria-pressed={previewMode==='fit'} onClick={()=>setPreviewMode('fit')}>Fit</button><button type="button" aria-pressed={previewMode==='actual'} title="One artwork pixel per CSS pixel" onClick={()=>setPreviewMode('actual')}>100%</button></div><output aria-label="Displayed scale">{displayScale}%</output></div></div>
+          <div className="ad-preview-controls"><div className="ad-segmented" role="group" aria-label="Preview scale"><button type="button" aria-pressed={previewMode==='auto'} title="25% larger than Fit" onClick={()=>setPreviewMode('auto')}>Auto</button><button type="button" aria-pressed={previewMode==='fit'} onClick={()=>setPreviewMode('fit')}>Fit</button><button type="button" aria-pressed={previewMode==='instagram'} title="Phone-width Instagram preview (390px)" onClick={()=>setPreviewMode('instagram')}>Instagram</button></div></div></div>
           {/* An inside page has no use for these, but keeps their room, so it is shown as large as a cover. */}
           <div className={isInside ? 'preview-toolbar spacer' : 'preview-toolbar'} aria-hidden={isInside || undefined}>
             <div className="background-switcher" role="group" aria-label="Preview background">

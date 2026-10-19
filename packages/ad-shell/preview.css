@@ -2,9 +2,8 @@
 .ad-preview-controls { display: flex; align-items: center; gap: 9px; flex: none; }
 .ad-preview-controls .ad-segmented { width: auto; }
 .ad-preview-controls .ad-segmented button { min-height: 32px; padding: 5px 10px; white-space: nowrap; }
-.ad-preview-controls output { min-width: 3ch; font-size: 12px; color: var(--ad-ui-muted, #74746d); font-variant-numeric: tabular-nums; }
-.ad-preview-viewport { display: flex; align-items: safe center; justify-content: safe center; overflow: auto; min-width: 0; min-height: 0; overscroll-behavior: contain; }
+.ad-preview-viewport { display: flex; align-items: safe center; justify-content: safe center; overflow: auto; min-width: 0; min-height: 0; overscroll-behavior: auto; }
 .ad-preview-surface { flex: none; max-width: none !important; max-height: none !important; }
 
-.ad-preview-controls:has(.ad-segmented button:last-child[aria-pressed="true"]) output { visibility: hidden; }
+
 .ad-preview-viewport:focus-visible { outline: 2px solid var(--ad-ui-action, #ffed1f); outline-offset: -2px; }
