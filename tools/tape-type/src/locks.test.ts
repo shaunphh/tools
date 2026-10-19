@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { coverDefaults, sanitizeCover } from './cover'
 import { PARTNER_LOOK, POST_LOOK, VIDEO_LOOKS, lookFor } from './formats'
-import { HELD, HOUSE_CUT_KEY, applyLocks, firstSinceHouseCut, isBarred, isLocked, withHouseCut, withLookColumn } from './locks'
+import { HELD, HOUSE_CUT_KEY, applyLocks, firstSinceHouseCut, isBarred, isLocked, withHouseCut, withLookStart } from './locks'
 import { defaults, stylePresets } from '@ad/tape/settings'
 import type { GeneratorSettings } from '@ad/tape/types'
 
@@ -33,8 +33,15 @@ describe('locked choices', () => {
   it('opens every time in the look’s medium column, whatever column was picked last time', () => {
     for (const look of [POST_LOOK, ...Object.values(VIDEO_LOOKS)]) {
       expect(look.treatment.column).toBe('medium')
-      expect(withLookColumn({ ...defaults, column: 'wide', headline: 'Kept' }, look)).toMatchObject({ column: 'medium', headline: 'Kept' })
+      expect(withLookStart({ ...defaults, column: 'wide', headline: 'Kept' }, look)).toMatchObject({ column: 'medium', headline: 'Kept' })
     }
+  })
+
+  it('opens every time with the tag off, its words kept in the box, and a Partner post left aligned', () => {
+    for (const look of [POST_LOOK, PARTNER_LOOK, ...Object.values(VIDEO_LOOKS)]) {
+      expect(withLookStart({ ...defaults, eyebrowEnabled: true, eyebrow: 'Kept' }, look)).toMatchObject({ eyebrowEnabled: false, eyebrow: 'Kept' })
+    }
+    expect(withLookStart({ ...defaults, ...PARTNER_LOOK.treatment, align: 'center' }, PARTNER_LOOK).align).toBe('left')
   })
 
   it('gives a post the rough cut and a video the tape cut as their house cuts, once, and leaves the choice open after', () => {
@@ -113,7 +120,6 @@ describe('locked choices', () => {
     // some overlapping, and the tag off to start with, its words in the box (19 October 2026).
     // Set by eye on 19 October 2026: Rough cut, cling 104%, 13px apart ± 18, turned up to 2.8°.
     expect(PARTNER_LOOK.treatment).toEqual({ ...stylePresets.feature, mode: 'rough', align: 'left', hugStrength: 1.04, rotationVariance: 2.8, lineGap: 13, gapVariance: 18, stagger: 10 })
-    expect(PARTNER_LOOK.eyebrowOn).toBe(false)
     expect(isLocked('align', 'center', PARTNER_LOOK, false)).toBe(false)
     expect(isLocked('align', 'right', PARTNER_LOOK, false)).toBe(true)
     expect(isLocked('align', 'center', POST_LOOK, false)).toBe(true)

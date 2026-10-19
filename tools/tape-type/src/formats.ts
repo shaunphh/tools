@@ -39,10 +39,8 @@ export interface Look {
   tapes: readonly TapeTone[]
   /** The tag's colours, where it isn't the usual yellow one. */
   tag?: { tape: string; text: string }
-  /** The tag a cover of this kind starts with, or null for none. */
+  /** The words a cover of this kind suggests for its tag, or null for none. Every tag starts switched off (19 October 2026), its words waiting in the box. */
   eyebrow: string | null
-  /** False when the tag starts switched off, its words waiting in the box (a Partner post's, 19 October 2026). */
-  eyebrowOn?: boolean
   /** Alignments open beside the look's own (a Partner post may be centred, 19 October 2026). */
   aligns?: readonly TextAlign[]
   /** Where the text block starts out, across the room lettering has. */
@@ -83,8 +81,8 @@ export const POST_LOOK: Look = {
  * partner cover: heavier (PARTNER_WEIGHT); the Rough cut, clinging a touch (104%); the lines
  * roughly left aligned, each set in or out a few px by turns (or centred); the strips 13px apart,
  * each gap up to 18px wider or tighter at random, so some overlap and some stand apart, turned up
- * to 2.8°; the block fixed in the middle, the words don't move; the PARTNER tag waits in its box,
- * switched off.
+ * to 2.8°; the block fixed in the middle, the words don't move; it suggests a PARTNER tag, off to
+ * start with like every tag.
  */
 export const PARTNER_LOOK: Look = {
   label: 'Partner post',
@@ -94,12 +92,17 @@ export const PARTNER_LOOK: Look = {
   treatment: { ...stylePresets.feature, mode: 'rough', align: 'left', hugStrength: 1.04, rotationVariance: 2.8, lineGap: 13, gapVariance: 18, stagger: 10 },
   tapes: withGhost('light'),
   eyebrow: 'Partner',
-  eyebrowOn: false,
   aligns: ['center'],
   position: { x: 50, y: 50 },
   weight: PARTNER_WEIGHT,
   fixed: true,
 }
+
+/**
+ * A Partner post's sample headline: the published partner cover's words, WEEKEND on a line of its
+ * own (Shaun, 19 October 2026). A Partner post starts with it while the headline is still a sample.
+ */
+export const PARTNER_SAMPLE = 'The Creative Playground is launching this\nweekend'
 
 /** The three kinds of video, as on the cover mock-ups. */
 export const VIDEO_LOOKS: Record<VideoType, Look> = {

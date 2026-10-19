@@ -41,7 +41,7 @@ import {
 } from './artwork'
 import { loadCover, saveCover, type CoverOptions } from './cover'
 import { embeddedFontCss, embeddedFontCssNow, preloadEmbeddedFonts } from './fonts'
-import { GRID_CROP, PARTNER_LOOK, POST_LOOK, VIDEO_LOOKS, VIDEO_TYPES, frameFor, lookFor, tagFor, type CoverKind, type Look, type VideoType } from './formats'
+import { GRID_CROP, PARTNER_LOOK, PARTNER_SAMPLE, POST_LOOK, VIDEO_LOOKS, VIDEO_TYPES, frameFor, lookFor, tagFor, type CoverKind, type Look, type VideoType } from './formats'
 import {
   buildFurniture,
   furnitureBoxes,
@@ -55,7 +55,7 @@ import {
 } from './furniture'
 import { buildShape, nextSeed } from '@ad/tape/geometry'
 import { EYEBROW_WEIGHT, layoutHeadline, weightFor, type HeadlineLayout, type Measure } from './layout'
-import { LINE_HEIGHT, applyLocks, firstSinceHouseCut, isBarred, isLocked, lockedLineGap, tuning, unlocked, withHouseCut, withLookColumn } from './locks'
+import { LINE_HEIGHT, applyLocks, firstSinceHouseCut, isBarred, isLocked, lockedLineGap, tuning, unlocked, withHouseCut, withLookStart } from './locks'
 import {
   BODY,
   EXAMPLE,
@@ -98,6 +98,7 @@ import {
   TREATMENT_KEYS,
   columnWidth,
   columns,
+  defaults,
   loadSettings,
   saveSettings,
   stylePresets,
@@ -196,8 +197,10 @@ const samples = [
   'A massive night market is coming to Smithfield this weekend',
   'How to make the most of a weekend visit to Dublin',
   'One of Dublin’s best-known independent cinemas has announced it’s closing',
-  'The Creative Playground is launching this weekend',
+  PARTNER_SAMPLE,
 ]
+/** Whether a headline is still a sample (or the house one), not someone's own words: spacing and line breaks aside. */
+const isSample = (headline: string) => [...samples, defaults.headline].some((sample) => sample.replace(/\s+/g, ' ') === headline.replace(/\s+/g, ' ').trim())
 
 const modes: { value: ShapeMode; label: string; description: string }[] = [
   { value: 'plain', label: 'Plain', description: 'Clean rectangle' },
@@ -638,7 +641,9 @@ function App() {
   const [cover, setCover] = useState<CoverOptions>(loadCover)
   const [settings, setSettings] = useState<GeneratorSettings>(() => {
     const look = lookFor(cover.kind, cover.video, cover.partner)
-    return applyLocks(withLookColumn(withHouseCut(loadSettings(), look, FIRST_OPENING), look), look)
+    const opened = withLookStart(withHouseCut(loadSettings(), look, FIRST_OPENING), look)
+    // A Partner post opens with its own sample while the headline is still a sample.
+    return applyLocks(look === PARTNER_LOOK && isSample(opened.headline) ? { ...opened, headline: PARTNER_SAMPLE } : opened, look)
   })
   const [history, setHistory] = useState<number[]>([settings.seed])
   const [historyIndex, setHistoryIndex] = useState(0)
@@ -1056,7 +1061,8 @@ function App() {
       ...next.treatment,
       style: next.style,
       coverFormat: next.coverFormat,
-      eyebrowEnabled: next.eyebrow !== null && next.eyebrowOn !== false,
+      // Every tag starts off (19 October 2026): the look's words wait in the box.
+      eyebrowEnabled: false,
       eyebrow: next.eyebrow ?? current.eyebrow,
     }))
     setPosition(next.position)
@@ -1080,6 +1086,8 @@ function App() {
     if (partner === cover.partner) return
     updateCover('partner', partner)
     applyLook(lookFor('post', cover.video, partner))
+    // A sample headline gives way to the look's own sample; someone's own words stay.
+    if (isSample(settings.headline)) update('headline', partner ? PARTNER_SAMPLE : defaults.headline)
   }
 
   const making: Making = cover.kind === 'video' ? 'video' : isInside ? 'inside' : 'cover'

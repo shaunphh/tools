@@ -90,7 +90,11 @@ export const withHouseCut = (settings: GeneratorSettings, look: Look, first: boo
   (first ? { ...settings, mode: look.treatment.mode } : settings)
 
 /**
- * The settings with the look's column, the medium one, every time the tool opens: a column picked
- * last time (Wide, say) lasts until then, and not into the next cover (Shaun, 1 October 2026).
+ * What every cover starts with each time the tool opens, whatever was picked last time, which
+ * lasts until then and not into the next cover: the look's column, the medium one (Shaun,
+ * 1 October 2026), and its alignment (a Partner post starts left, though it may be centred), with
+ * the tag switched off, its words waiting in the box, to go on only where it says something
+ * (Shaun, 19 October 2026: tags were going on everything).
  */
-export const withLookColumn = (settings: GeneratorSettings, look: Look): GeneratorSettings => ({ ...settings, column: look.treatment.column })
+export const withLookStart = (settings: GeneratorSettings, look: Look): GeneratorSettings =>
+  ({ ...settings, column: look.treatment.column, align: look.treatment.align, eyebrowEnabled: false })
