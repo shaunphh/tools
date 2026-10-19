@@ -24,6 +24,10 @@ export interface GeneratorSettings {
   rotationVariance: number
   lineGap: number
   hugStrength: number
+  /** How far each line is set in or out, by turns, in px (19 Oct 2026): a hand-set edge, as on Partner posts. None when left out. */
+  stagger?: number
+  /** How much each gap between separate strips is set wider or tighter at random, in px (19 Oct 2026), so some overlap and some barely touch. None when left out. */
+  gapVariance?: number
   preferredEdge: EdgePreference
   mode: ShapeMode
   seed: number

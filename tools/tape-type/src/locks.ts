@@ -12,7 +12,7 @@ import { AD_TYPE } from '@ad/tape/adTokens'
  * switches off single choices, such as the narrow column. Beyond the text block only one thing
  * is held, in App: the arrow takes the logo's colour. Photo, logo and the logo's colour are free.
  */
-export const HELD = ['style', 'tone', 'perLine', 'align', 'coverFormat', 'hugStrength', 'rotationVariance'] as const
+export const HELD = ['style', 'tone', 'perLine', 'align', 'coverFormat', 'hugStrength', 'rotationVariance', 'lineGap', 'stagger', 'gapVariance'] as const
 export type HeldSetting = (typeof HELD)[number]
 
 /** Single choices that are switched off for now, whatever is being made. The others of each stay open. */
@@ -29,16 +29,22 @@ export const LINE_HEIGHT = AD_TYPE.coverHeadline.lineHeight
  * The line gap that sets lines LINE_HEIGHT apart. The engine spaces lines by the height of the
  * letters plus a gap, so the gap is whatever is left of the line height.
  */
-export const lockedLineGap = (fontSize: number, letterHeight: number) => fontSize * LINE_HEIGHT - letterHeight
+export const lockedLineGap = (fontSize: number, letterHeight: number, lineHeight = LINE_HEIGHT) => fontSize * lineHeight - letterHeight
 
 /** Opening the tool with ?unlocked in the address lifts every lock. */
 export const unlocked = () => typeof location !== 'undefined' && new URLSearchParams(location.search).has('unlocked')
 
-const lookValue = <K extends HeldSetting>(look: Look, setting: K) =>
-  (setting === 'style' ? look.style : setting === 'coverFormat' ? look.coverFormat : look.treatment[setting as 'tone' | 'perLine' | 'align' | 'hugStrength' | 'rotationVariance']) as GeneratorSettings[K]
+/**
+ * Opening it with ?tune opens only Fine-tune (cling, line gap, turns, stagger), every other lock
+ * kept, for finding a look's values by eye (19 October 2026). They go back to the look's on reload.
+ */
+export const tuning = () => typeof location !== 'undefined' && new URLSearchParams(location.search).has('tune')
 
-/** The values of a held setting the look leaves open beside its own: for now the tapes it allows. */
-const openTo = (look: Look, setting: HeldSetting): readonly unknown[] => (setting === 'tone' ? look.tapes : [])
+const lookValue = <K extends HeldSetting>(look: Look, setting: K) =>
+  (setting === 'style' ? look.style : setting === 'coverFormat' ? look.coverFormat : look.treatment[setting as 'tone' | 'perLine' | 'align' | 'hugStrength' | 'rotationVariance' | 'lineGap' | 'stagger' | 'gapVariance']) as GeneratorSettings[K]
+
+/** The values of a held setting the look leaves open beside its own: the tapes it allows, and any other alignments. */
+const openTo = (look: Look, setting: HeldSetting): readonly unknown[] => (setting === 'tone' ? look.tapes : setting === 'align' ? look.aligns ?? [] : [])
 
 export const isLocked = <K extends HeldSetting>(setting: K, value: GeneratorSettings[K], look: Look, open = unlocked()) =>
   !open && value !== lookValue(look, setting) && !openTo(look, setting).includes(value)

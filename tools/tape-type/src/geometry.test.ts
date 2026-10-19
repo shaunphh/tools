@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildShape, coverSizeFromCharacters, hasSelfIntersection, wrapText } from '@ad/tape/geometry'
+import { buildShape, coverSizeFromCharacters, hasSelfIntersection, rotatePoint, wrapText } from '@ad/tape/geometry'
 import type { GeneratorSettings } from '@ad/tape/types'
 
 const base: GeneratorSettings = {
@@ -16,6 +16,55 @@ const layouts = [
 ]
 
 describe('shape geometry', () => {
+  it('sets each gap between strips a little wider or tighter, and keeps the letters clear of the next line', () => {
+    const layout = layouts[1]
+    const bounds = { ascent: 64, descent: 0 }
+    const feature = { ...base, style: 'feature', perLine: true, mode: 'torn', fontSize: 90, lineGap: -2 } as const
+    const steps = (shape: ReturnType<typeof buildShape>) => shape.lines.slice(1).map((line, index) => line.baseline - shape.lines[index].baseline)
+    // The least room between a line's letters and the next line's, each turned with its strip.
+    const rooms = (shape: ReturnType<typeof buildShape>) => shape.strips!.slice(1).map((lower, index) => {
+      const upper = shape.strips![index]
+      const edge = (strip: typeof upper, y: number) => [0, strip.line.width].map((dx) => rotatePoint({ x: (strip.line.inkX ?? strip.line.x) + dx, y }, strip.centerX, strip.centerY, strip.angle))
+      const [a0, a1] = edge(upper, upper.line.baseline + bounds.descent)
+      const [b0, b1] = edge(lower, lower.line.baseline - bounds.ascent)
+      const yAt = (p: { x: number; y: number }, q: { x: number; y: number }, x: number) => p.y + (x - p.x) * (q.y - p.y) / (q.x - p.x)
+      const ends = [Math.max(a0.x, b0.x), Math.min(a1.x, b1.x)]
+      return Math.min(...ends.map((x) => yAt(b0, b1, x) - yAt(a0, a1, x)))
+    })
+    let varied = 0
+    for (let seed = 1; seed <= 30; seed += 1) {
+      const even = buildShape({ ...feature, seed, rotationVariance: 0 }, layout.labels, layout.widths, [], bounds)
+      const evenSteps = steps(even)
+      for (const step of evenSteps) expect(step).toBeCloseTo(evenSteps[0], 6)
+      const random = steps(buildShape({ ...feature, seed, rotationVariance: 0, gapVariance: 10 }, layout.labels, layout.widths, [], bounds))
+      random.forEach((step, index) => expect(Math.abs(step - evenSteps[index])).toBeLessThanOrEqual(10 + 1e-6))
+      varied += random.filter((step, index) => Math.abs(step - evenSteps[index]) > 1).length
+      // Turned hard and overlapping, the letters still keep an eighth of the size clear.
+      const turned = buildShape({ ...feature, seed, rotationVariance: 4, gapVariance: 10, lineGap: -14 }, layout.labels, layout.widths, [], bounds)
+      for (const room of rooms(turned)) expect(room).toBeGreaterThanOrEqual(90 * 0.12 - 1e-6)
+    }
+    expect(varied).toBeGreaterThan(30)
+  })
+
+  it('staggers each line in and out by turns, without re-cutting the tape', () => {
+    const layout = layouts[1]
+    const feature = { ...base, style: 'feature', perLine: true, mode: 'torn', rotationVariance: 0.6, lineGap: 12 } as const
+    for (let seed = 1; seed <= 20; seed += 1) {
+      const straight = buildShape({ ...feature, seed }, layout.labels, layout.widths)
+      const staggered = buildShape({ ...feature, seed, stagger: 10 }, layout.labels, layout.widths)
+      const shifts = staggered.lines.map((line, index) => (line.inkX ?? line.x) - (straight.lines[index].inkX ?? straight.lines[index].x))
+      for (const [index, shift] of shifts.entries()) {
+        expect(Math.abs(shift)).toBeGreaterThanOrEqual(5)
+        expect(Math.abs(shift)).toBeLessThanOrEqual(10)
+        if (index) expect(Math.sign(shift)).toBe(-Math.sign(shifts[index - 1]))
+        // The strip moves with its line and keeps its cut and turn.
+        const moved = straight.strips![index].points.map((point) => ({ x: point.x + shift, y: point.y }))
+        staggered.strips![index].points.forEach((point, at) => expect(point.x).toBeCloseTo(moved[at].x, 6))
+        expect(staggered.strips![index].angle).toBe(straight.strips![index].angle)
+      }
+    }
+  })
+
   it('generates 80 controlled variations without clipping or self-intersection', () => {
     for (const mode of ['clean', 'tape', 'cling', 'rough', 'torn'] as const) {
       for (const layout of layouts) {

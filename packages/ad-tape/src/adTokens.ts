@@ -55,6 +55,7 @@ export const AD_COLOR = {
 /** The type roles Tape Type sets. */
 export const AD_TYPE = {
   coverHeadline: adStyle('cover-headline'),
+  coverPartner: adStyle('cover-partner'),
   eyebrow: adStyle('eyebrow'),
   storyTitle: adStyle('story-title'),
   body: adStyle('body'),

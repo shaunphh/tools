@@ -100,6 +100,15 @@
             "usage": "Tape Type post and video covers: Bold, as typed (Title Case by default), the largest size from 90px down to 72px that fits, lines 0.94 apart, −2% tracking (none until 18 October 2026, when the grid's covers read a touch loose beside Guide Studio's −3% carousel covers; lines are fitted by their tracked widths, and the eyebrow keeps the font's spacing), `dark` on `light` tape, or `light` on Ghost tape (`tape-ghost`, 18 October 2026)."
           },
           {
+            "name": "cover-partner",
+            "fontSize": "90px",
+            "lineHeight": 0.94,
+            "letterSpacing": "-0.02em",
+            "fontWeight": 178,
+            "sample": "The Creative Playground Is Launching This Weekend",
+            "usage": "Tape Type Partner posts (19 October 2026): the cover headline's size and tracking, in capitals on loose strips, heavier than Bold at 178 on Barlow GX's scale, between ExtraBold (166) and Black (188), as the published partner covers are set. The lines roughly left aligned (each set in or out a few px by turns) or centred, in a block fixed in the middle: the words don't move. The strips are spaced strip to strip, not by this line height: 13px apart, each gap up to 18px wider or tighter at random so some overlap, Rough cut, turned up to 2.8° (Tape Type's Partner look). The PARTNER tag starts switched off."
+          },
+          {
             "name": "cover-carousel",
             "fontSize": "196px",
             "lineHeight": 0.85,
@@ -394,7 +403,7 @@
       {
         "name": "cut-headline",
         "value": "rough",
-        "usage": "Post covers: the headline's tape has the rough cut, its wider strip at the bottom on Guide Studio's covers. Partner posts (the Feature style, for partnerships and special posts, since 18 October 2026) stack capitals on torn strips instead."
+        "usage": "Post covers: the headline's tape has the rough cut, its wider strip at the bottom on Guide Studio's covers. Partner posts (the Feature style, for partnerships and special posts, since 18 October 2026) stack capitals on loose, rough-cut strips instead."
       },
       {
         "name": "cut-tag",

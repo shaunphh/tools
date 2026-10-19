@@ -109,7 +109,18 @@ describe('locked choices', () => {
     expect(lookFor('post', 'report')).toBe(POST_LOOK)
     expect(lookFor('video', 'report', true)).toBe(VIDEO_LOOKS.report)
     expect(PARTNER_LOOK).toMatchObject({ label: 'Partner post', style: 'feature', eyebrow: 'Partner', tapes: POST_LOOK.tapes, position: { x: 50, y: 50 } })
-    expect(PARTNER_LOOK.treatment).toEqual(stylePresets.feature)
+    // Roughly left aligned (each line set in or out by turns) or centred, the strips about touching,
+    // some overlapping, and the tag off to start with, its words in the box (19 October 2026).
+    // Set by eye on 19 October 2026: Rough cut, cling 104%, 13px apart ± 18, turned up to 2.8°.
+    expect(PARTNER_LOOK.treatment).toEqual({ ...stylePresets.feature, mode: 'rough', align: 'left', hugStrength: 1.04, rotationVariance: 2.8, lineGap: 13, gapVariance: 18, stagger: 10 })
+    expect(PARTNER_LOOK.eyebrowOn).toBe(false)
+    expect(isLocked('align', 'center', PARTNER_LOOK, false)).toBe(false)
+    expect(isLocked('align', 'right', PARTNER_LOOK, false)).toBe(true)
+    expect(isLocked('align', 'center', POST_LOOK, false)).toBe(true)
+    expect(applyLocks({ ...defaults, style: 'feature', align: 'center' }, PARTNER_LOOK, false).align).toBe('center')
+    // Heavier than every other cover, and the words stay in the middle (19 October 2026).
+    expect(PARTNER_LOOK).toMatchObject({ weight: 178, fixed: true })
+    expect(POST_LOOK.fixed).toBeUndefined()
     expect(isLocked('style', 'feature', PARTNER_LOOK, false)).toBe(false)
     expect(isLocked('style', 'headline', PARTNER_LOOK, false)).toBe(true)
     expect(isLocked('style', 'feature', POST_LOOK, false)).toBe(true)
@@ -117,7 +128,7 @@ describe('locked choices', () => {
     expect(isLocked('tone', 'yellow', PARTNER_LOOK, false)).toBe(true)
     expect(isLocked('tone', 'none', PARTNER_LOOK, false)).toBe(true)
     // A post saved as a headline opens as a Partner post in the Feature look, words kept.
-    expect(applyLocks({ ...defaults, headline: 'Kept' }, PARTNER_LOOK, false)).toMatchObject({ ...stylePresets.feature, style: 'feature', headline: 'Kept' })
+    expect(applyLocks({ ...defaults, headline: 'Kept' }, PARTNER_LOOK, false)).toMatchObject({ ...PARTNER_LOOK.treatment, style: 'feature', headline: 'Kept' })
   })
 
   it('switches off the narrow column, and moves covers saved in it to the medium one', () => {

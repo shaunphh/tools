@@ -55,7 +55,7 @@ import {
 } from './furniture'
 import { buildShape, nextSeed } from '@ad/tape/geometry'
 import { EYEBROW_WEIGHT, layoutHeadline, weightFor, type HeadlineLayout, type Measure } from './layout'
-import { LINE_HEIGHT, applyLocks, firstSinceHouseCut, isBarred, isLocked, lockedLineGap, unlocked, withHouseCut, withLookColumn } from './locks'
+import { LINE_HEIGHT, applyLocks, firstSinceHouseCut, isBarred, isLocked, lockedLineGap, tuning, unlocked, withHouseCut, withLookColumn } from './locks'
 import {
   BODY,
   EXAMPLE,
@@ -180,6 +180,8 @@ const colourOptions: { value: ColourChoice; label: string }[] = [
   { value: 'dark', label: 'Dark' },
 ]
 const LOCKED_NOTE = 'Switched off for now'
+/** A strip gap in words: how far apart, or how far over each other. */
+const gapName = (gap: number) => (gap > 0 ? `${gap}px apart` : gap < 0 ? `${-gap}px overlap` : 'Touching')
 /** Why a post can't take dark or yellow tape, and a video another kind's. */
 const POST_TAPE_NOTE = 'Dark and yellow tape are the video covers’: a post keeps to light tape, or Ghost'
 const VIDEO_TAPE_NOTE = 'Each kind of video keeps its own tape, or Ghost'
@@ -240,14 +242,14 @@ function useFontStatus() {
   return { version, loading }
 }
 
-function useTextLayout(settings: GeneratorSettings, fontVersion: number) {
+function useTextLayout(settings: GeneratorSettings, fontVersion: number, lookWeight?: number) {
   const context = useMemo(() => document.createElement('canvas').getContext('2d'), [])
   const text = useMemo(
     () => displayText(normaliseHeadline(settings.headline), settings.style, settings.titleCase),
     [settings.headline, settings.style, settings.titleCase],
   )
   const eyebrow = settings.eyebrowEnabled ? normaliseEyebrow(settings.eyebrow) : ''
-  const weight = weightFor(settings.style)
+  const weight = lookWeight ?? weightFor(settings.style)
 
   // Ask for exactly the faces and subsets this text needs (e.g. latin-ext for "ő"); their loading triggers a re-measure.
   useEffect(() => {
@@ -271,9 +273,10 @@ function useTextLayout(settings: GeneratorSettings, fontVersion: number) {
       fontSize: settings.fontSize,
       autoWrap: settings.autoWrap,
       eyebrow,
+      weight,
     }, measure)
     return { ...layout, caseWarning: settings.style !== 'feature' && isAllCaps(settings.headline), fontVersion }
-  }, [context, text, eyebrow, settings.style, settings.titleCase, settings.coverFormat, settings.column, settings.autoSize, settings.fontSize, settings.autoWrap, settings.headline, fontVersion])
+  }, [context, text, eyebrow, settings.style, settings.titleCase, settings.coverFormat, settings.column, settings.autoSize, settings.fontSize, settings.autoWrap, settings.headline, weight, fontVersion])
 }
 
 function overflowMessage(layout: HeadlineLayout, settings: GeneratorSettings) {
@@ -697,7 +700,7 @@ function App() {
     typeBaseSeen.current = typeBase
     setPageType(PAGE_TYPE)
   }, [typeBase])
-  const [position, setPosition] = useState<Position>(() => ({ x: anchorX(settings.align), y: lookFor(cover.kind, cover.video, cover.partner).position.y }))
+  const [chosenPosition, setPosition] = useState<Position>(() => ({ x: anchorX(settings.align), y: lookFor(cover.kind, cover.video, cover.partner).position.y }))
   const [sampleOpen, setSampleOpen] = useState(false)
   const [panels, setPanels] = useState<Record<PanelId, boolean>>(loadPanels)
   const previewRef = useRef<HTMLDivElement>(null)
@@ -713,8 +716,16 @@ function App() {
   const treatments = useRef<Partial<Record<CoverStyle, Treatment>>>({})
   const cropRef = useRef<{ key: string; crop: Promise<string> } | null>(null)
   const locksOff = useMemo(unlocked, [])
+  // ?tune opens Fine-tune alone, for finding a look's values by eye.
+  const tuneOnly = useMemo(tuning, [])
+  const tuneOpen = locksOff || tuneOnly
+  const [tuneLineHeight, setTuneLineHeight] = useState(LINE_HEIGHT)
   const frame = frameFor(cover.kind)
   const look = lookFor(cover.kind, cover.video, cover.partner)
+  /** A Partner post's words stay in the middle (19 October 2026): no dragging, nudging or Position. */
+  const wordsFixed = Boolean(look.fixed) && !locksOff
+  /** Where the words sit: where they were put, or a fixed look's own place. */
+  const position = wordsFixed ? look.position : chosenPosition
   const isInside = cover.kind === 'post' && cover.page === 'inside'
   useEffect(() => {
     const viewport=previewViewportRef.current, surface=previewRef.current
@@ -724,13 +735,15 @@ function App() {
   }, [frame.width,frame.height,previewMode])
   const fileStem = cover.kind === 'video' ? 'tape-type-video-cover' : isInside ? 'tape-type-instagram-page-2' : 'tape-type-instagram'
   const fonts = useFontStatus()
-  const layout = useTextLayout(settings, fonts.version)
+  // The look's own weight goes with its own style (a Partner post's Feature), unlocked too.
+  const layout = useTextLayout(settings, fonts.version, settings.style === look.style ? look.weight : undefined)
   const layoutSettings = useMemo<GeneratorSettings>(() => ({
     ...settings,
     fontSize: layout.fontSize,
-    // Locked, the line height is fixed, whatever gap was saved.
-    lineGap: locksOff ? settings.lineGap : lockedLineGap(layout.fontSize, layout.ascent + layout.descent),
-  }), [settings, layout.fontSize, layout.ascent, layout.descent, locksOff])
+    // Locked, a block's line height is fixed, whatever gap was saved; separate strips (a Partner
+    // post's) are spaced by the look's own gap, from strip to strip.
+    lineGap: locksOff || settings.perLine ? settings.lineGap : lockedLineGap(layout.fontSize, layout.ascent + layout.descent, tuneLineHeight),
+  }), [settings, layout.fontSize, layout.ascent, layout.descent, locksOff, tuneLineHeight])
   const shape = useMemo(() => buildShape(
     layoutSettings,
     layout.labels,
@@ -866,6 +879,11 @@ function App() {
 
   const update = useCallback(<K extends keyof GeneratorSettings>(key: K, value: GeneratorSettings[K]) => {
     setSettings((current) => ({ ...current, [key]: value }))
+  }, [])
+
+  /** New words for the tag put it on the cover, if it was off. */
+  const setEyebrow = useCallback((eyebrow: string) => {
+    setSettings((current) => ({ ...current, eyebrow, eyebrowEnabled: true }))
   }, [])
 
   const togglePanel = useCallback((id: PanelId, open: boolean) => {
@@ -1038,7 +1056,7 @@ function App() {
       ...next.treatment,
       style: next.style,
       coverFormat: next.coverFormat,
-      eyebrowEnabled: next.eyebrow !== null,
+      eyebrowEnabled: next.eyebrow !== null && next.eyebrowOn !== false,
       eyebrow: next.eyebrow ?? current.eyebrow,
     }))
     setPosition(next.position)
@@ -1333,9 +1351,11 @@ function App() {
     const down = (event.clientY - stage.top) * scale - bannerTop
     const onBanner = down >= 0 && down < photoFrame.height
     if (isInside && !(shownPhoto && onBanner)) return
+    // Words that stay put (a Partner post's) leave a press to the photo, if there is one.
+    if (wordsFixed && !isInside && !shownPhoto) return
     dragRef.current = {
       pointerId: event.pointerId,
-      target: isInside || (shownPhoto && !onWords) ? 'photo' : 'artwork',
+      target: isInside || (shownPhoto && (!onWords || wordsFixed)) ? 'photo' : 'artwork',
       touch,
       active: !touch,
       startX: event.clientX,
@@ -1429,7 +1449,7 @@ function App() {
   }
 
   const nudge = (event: React.KeyboardEvent) => {
-    if (isInside) return
+    if (isInside || wordsFixed) return
     const step = event.shiftKey ? 50 : 10
     const moves: Record<string, [number, number]> = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] }
     const move = moves[event.key]
@@ -1517,7 +1537,7 @@ function App() {
       series ? 'Series cover' : `${columnLabel} column`,
       series ? '172px' : settings.autoSize ? `Auto ${layout.fontSize}px` : `${layout.fontSize}px`,
     ].join(' · '),
-    tune: `Cling ${Math.round(settings.hugStrength * 100)}% · ${locksOff ? `Gap ${settings.lineGap}px` : `Line height ${LINE_HEIGHT}`} · Turn ${settings.rotationVariance.toFixed(1)}°`,
+    tune: `Cling ${Math.round(settings.hugStrength * 100)}% · ${locksOff || settings.perLine ? `Gap ${settings.lineGap}px${settings.perLine && settings.gapVariance ? ` ±${settings.gapVariance}` : ''}` : `Line height ${tuneLineHeight.toFixed(2)}`} · Turn ${settings.rotationVariance.toFixed(1)}°${settings.stagger ? ` · Stagger ${settings.stagger}px` : ''}`,
   }
   const fitTone = blockedReason && !layout.empty ? 'error' : layout.caseWarning ? 'warning' : ''
   const exportBlocked = blockedReason ?? (fonts.loading ? 'Loading fonts…' : null)
@@ -1537,7 +1557,7 @@ function App() {
                 <span className="ad-switch__track" />
               </label>
               <p className="ad-hint panel-note">{cover.partner
-                ? 'A Partner post stands apart in the grid: capitals on stacked torn strips, with a Partner tag. It is for partnerships and special posts only; everything else is a post.'
+                ? 'A Partner post stands apart in the grid: heavier capitals on loose, stacked strips, roughly left aligned. It is for partnerships and special posts only; everything else is a post.'
                 : `A post is ${POST_LOOK.description.toLocaleLowerCase()}, so the grid reads as one. Partner post is the exception, for partnerships and special posts.`}</p>
             </Panel>
           )}
@@ -1832,22 +1852,24 @@ function App() {
                   <span className="ad-switch__track" />
                 </label>
               </div>
+              {/* The box stays when the tag is off, so its words wait there: typing or picking one puts it on. */}
+              <input
+                className="ad-input eyebrow-input"
+                aria-label="Eyebrow text"
+                value={settings.eyebrow}
+                maxLength={40}
+                placeholder="Breaking"
+                onChange={(event) => setEyebrow(event.target.value)}
+              />
+              <div className="chip-row">
+                {eyebrowSuggestions(cover.kind, cover.partner).map((suggestion) => {
+                  const active = settings.eyebrowEnabled && settings.eyebrow.trim().toLocaleLowerCase() === suggestion.toLocaleLowerCase()
+                  return <button key={suggestion} aria-pressed={active} className={active ? 'active' : ''} onClick={() => setEyebrow(suggestion)}>{suggestion}</button>
+                })}
+              </div>
+              {!settings.eyebrowEnabled && <p className="ad-hint panel-note">Off: the cover has no tag. Type one, or pick one, to put it on.</p>}
               {settings.eyebrowEnabled && (
                 <>
-                  <input
-                    className="ad-input eyebrow-input"
-                    aria-label="Eyebrow text"
-                    value={settings.eyebrow}
-                    maxLength={40}
-                    placeholder="Breaking"
-                    onChange={(event) => update('eyebrow', event.target.value)}
-                  />
-                  <div className="chip-row">
-                    {eyebrowSuggestions(cover.kind, cover.partner).map((suggestion) => {
-                      const active = settings.eyebrow.trim().toLocaleLowerCase() === suggestion.toLocaleLowerCase()
-                      return <button key={suggestion} aria-pressed={active} className={active ? 'active' : ''} onClick={() => update('eyebrow', suggestion)}>{suggestion}</button>
-                    })}
-                  </div>
                   <Segmented
                     label="Eyebrow colour"
                     note={!eyebrowOpen ? 'The look’s own, for now' : cover.eyebrowColour === 'auto' || cover.eyebrowColour === settings.tone ? 'The look’s own' : undefined}
@@ -1943,7 +1965,7 @@ function App() {
             </div>
             <div className="style-caption">
               <Lock size={12} aria-hidden="true" />
-              <span>Barlow {WEIGHT_NAMES[layout.weight] ?? ''} {layout.weight} · {isFeature ? 'ALL CAPS' : settings.titleCase ? 'Title Case' : 'as typed'} · {series ? TEXT_AREA_WIDTH : columnWidth(settings.column)}px column</span>
+              <span>Barlow {WEIGHT_NAMES[layout.weight] ? `${WEIGHT_NAMES[layout.weight]} ` : ''}{layout.weight} · {isFeature ? 'ALL CAPS' : settings.titleCase ? 'Title Case' : 'as typed'} · {series ? TEXT_AREA_WIDTH : columnWidth(settings.column)}px column</span>
               <button className="ad-btn ad-btn--link" onClick={resetStyle} title="Put this style's tape, colour, cut and layout back to the house look">Reset style</button>
             </div>
           </Panel>
@@ -2000,8 +2022,10 @@ function App() {
               <Segmented label="Alignment" value={settings.align} options={alignOptions} locked={(align) => isLocked('align', align, look, locksOff)} onChange={chooseAlign} />
               <Segmented
                 label="Position"
+                note={wordsFixed ? 'Fixed in the middle' : undefined}
                 value={positionEntry?.label ?? null}
                 options={positionOptions}
+                disabled={wordsFixed}
                 onChange={(label) => {
                   const entry = positions.find((candidate) => candidate.label === label)
                   if (entry) setPosition({ x: anchorX(settings.align), y: entry.y })
@@ -2024,11 +2048,15 @@ function App() {
 
           <Panel id="tune" title="Fine-tune" summary={summaries.tune} open={panels.tune} onToggle={togglePanel}>
             <div className="range-stack">
-              <RangeField label="Tape cling" value={settings.hugStrength} min={0.82} max={1.16} step={0.01} disabled={noTape || !locksOff} title={locksOff ? undefined : LOCKED_NOTE} format={(value) => `${Math.round(value * 100)}%`} onChange={(value) => update('hugStrength', value)} />
-              {locksOff
-                ? <RangeField label="Line gap" value={settings.lineGap} min={-8} max={20} suffix="px" onChange={(value) => update('lineGap', value)} />
+              <RangeField label="Tape cling" value={settings.hugStrength} min={0.82} max={1.16} step={0.01} disabled={noTape || !tuneOpen} title={tuneOpen ? undefined : LOCKED_NOTE} format={(value) => `${Math.round(value * 100)}%`} onChange={(value) => update('hugStrength', value)} />
+              {locksOff || settings.perLine
+                ? <RangeField label="Line gap" value={settings.lineGap} min={-30} max={30} disabled={!tuneOpen} title={tuneOpen ? undefined : LOCKED_NOTE} format={gapName} onChange={(value) => update('lineGap', value)} />
+                : tuneOnly
+                ? <RangeField label="Line gap" value={tuneLineHeight} min={0.65} max={1.2} step={0.01} format={(value) => `Line height ${value.toFixed(2)}`} onChange={setTuneLineHeight} />
                 : <RangeField label="Line gap" value={Math.max(-8, Math.min(20, layoutSettings.lineGap))} min={-8} max={20} disabled title={`${LOCKED_NOTE}: lines are set ${LINE_HEIGHT} of the type size apart`} format={() => `Line height ${LINE_HEIGHT}`} onChange={() => undefined} />}
-              <RangeField label="Rotation variance" value={settings.rotationVariance} min={0} max={2} step={0.1} disabled={!settings.perLine || !locksOff} title={locksOff ? undefined : LOCKED_NOTE} format={(value) => `${value.toFixed(1)}°`} onChange={(value) => update('rotationVariance', value)} />
+              <RangeField label="Gap variance" value={settings.gapVariance ?? 0} min={0} max={20} disabled={!settings.perLine || !tuneOpen} title={tuneOpen ? 'How much each gap is set wider or tighter, at random' : LOCKED_NOTE} format={(value) => (value ? `±${value}px` : 'Even')} onChange={(value) => update('gapVariance', value)} />
+              <RangeField label="Rotation variance" value={settings.rotationVariance} min={0} max={4} step={0.1} disabled={!settings.perLine || !tuneOpen} title={tuneOpen ? undefined : LOCKED_NOTE} format={(value) => `${value.toFixed(1)}°`} onChange={(value) => update('rotationVariance', value)} />
+              <RangeField label="Stagger" value={settings.stagger ?? 0} min={0} max={30} disabled={!tuneOpen} title={tuneOpen ? 'How far each line is set in or out, by turns' : LOCKED_NOTE} format={(value) => (value ? `${value}px in and out` : 'Straight edge')} onChange={(value) => update('stagger', value)} />
             </div>
           </Panel>
           </>}
@@ -2134,12 +2162,14 @@ function App() {
                 </div>
               )}
               <div
-                className="artwork draggable"
+                className={wordsFixed && !isInside && !shownPhoto ? 'artwork' : 'artwork draggable'}
                 tabIndex={0}
                 role="application"
                 aria-label={isInside
                   ? `Inside page.${shownPhoto ? ' Drag the picture in its banner to reposition it.' : ''}`
-                  : `Artwork position. Drag, or use the arrow keys (Shift for bigger steps).${shownPhoto ? ' Drag the photo behind the words to reposition it.' : ''}`}
+                  : wordsFixed
+                    ? `Partner post artwork, fixed in the middle.${shownPhoto ? ' Drag the photo to reposition it.' : ''}`
+                    : `Artwork position. Drag, or use the arrow keys (Shift for bigger steps).${shownPhoto ? ' Drag the photo behind the words to reposition it.' : ''}`}
                 onPointerDown={startDrag}
                 onPointerMove={drag}
                 onPointerUp={endDrag}
@@ -2184,7 +2214,7 @@ function App() {
                   </g>
                 </svg>}
               </div>
-              {!isInside && <span className="stage-coordinate top-left">{frame.width} × {frame.height} · {shownPhoto ? 'drag the words or the photo' : 'drag or arrow keys to position'}</span>}
+              {!isInside && <span className="stage-coordinate top-left">{frame.width} × {frame.height} · {wordsFixed ? (shownPhoto ? 'words fixed in the middle · drag the photo' : 'words fixed in the middle') : shownPhoto ? 'drag the words or the photo' : 'drag or arrow keys to position'}</span>}
               {!isInside && <span className="stage-coordinate bottom-right">{layout.fontSize}px · {layout.labels.length} lines · {shape.personality.toUpperCase()}</span>}
             </div>
           </div>

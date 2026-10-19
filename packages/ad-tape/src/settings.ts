@@ -31,14 +31,14 @@ export const columns: { value: ColumnWidth; label: string; width: number }[] = [
 export const columnWidth = (column: ColumnWidth) => columns.find((entry) => entry.value === column)?.width ?? TEXT_AREA_WIDTH
 
 /** The settings a cover style owns: its house look, which can still be adjusted afterwards. */
-export const TREATMENT_KEYS = ['perLine', 'tone', 'align', 'mode', 'column', 'hugStrength', 'rotationVariance', 'lineGap'] as const
+export const TREATMENT_KEYS = ['perLine', 'tone', 'align', 'mode', 'column', 'hugStrength', 'rotationVariance', 'lineGap', 'stagger', 'gapVariance'] as const
 export type Treatment = Pick<GeneratorSettings, (typeof TREATMENT_KEYS)[number]>
 
 export const stylePresets: Record<CoverStyle, Treatment> = {
   // Most published headline covers are one plain rectangle of tape, left aligned, in a narrow column.
-  headline: { perLine: false, tone: 'light', align: 'left', mode: 'plain', column: 'narrow', hugStrength: 1, rotationVariance: 0, lineGap: 2 },
+  headline: { perLine: false, tone: 'light', align: 'left', mode: 'plain', column: 'narrow', hugStrength: 1, rotationVariance: 0, lineGap: 2, stagger: 0, gapVariance: 0 },
   // Feature covers: capitals on separate torn strips, centred, slightly turned, with gaps between.
-  feature: { perLine: true, tone: 'light', align: 'center', mode: 'torn', column: 'wide', hugStrength: 1, rotationVariance: 0.6, lineGap: 12 },
+  feature: { perLine: true, tone: 'light', align: 'center', mode: 'torn', column: 'wide', hugStrength: 1, rotationVariance: 0.6, lineGap: 12, stagger: 0, gapVariance: 0 },
 }
 
 export const defaults: GeneratorSettings = {
@@ -58,6 +58,8 @@ export const defaults: GeneratorSettings = {
   rotationVariance: 0,
   lineGap: 2,
   hugStrength: 1,
+  stagger: 0,
+  gapVariance: 0,
   preferredEdge: 'auto',
   mode: 'plain',
   seed: 18473562,
@@ -91,9 +93,11 @@ export function sanitizeSettings(stored: Record<string, unknown>): GeneratorSett
     align: oneOf(stored.align, ['left', 'center', 'right'] as const, defaults.align),
     autoWrap: flag(stored.autoWrap, defaults.autoWrap),
     perLine: flag(stored.perLine, defaults.perLine),
-    rotationVariance: numberIn(stored.rotationVariance, 0, 2, defaults.rotationVariance),
-    lineGap: numberIn(stored.lineGap, -8, 20, defaults.lineGap),
+    rotationVariance: numberIn(stored.rotationVariance, 0, 4, defaults.rotationVariance),
+    lineGap: numberIn(stored.lineGap, -30, 30, defaults.lineGap),
     hugStrength: numberIn(stored.hugStrength, 0.82, 1.16, defaults.hugStrength),
+    stagger: numberIn(stored.stagger, 0, 40, 0),
+    gapVariance: numberIn(stored.gapVariance, 0, 30, 0),
     preferredEdge: oneOf(stored.preferredEdge, ['auto', 'left', 'right', 'top', 'bottom'] as const, defaults.preferredEdge),
     mode: oneOf(stored.mode, ['plain', 'clean', 'tape', 'cling', 'rough', 'torn'] as const, defaults.mode),
     seed: Math.max(1, Math.floor(numberIn(stored.seed, 1, 4294967295, defaults.seed))),

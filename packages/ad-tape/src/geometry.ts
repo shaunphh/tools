@@ -609,6 +609,27 @@ function viewBoxOf(points: Point[], margin: number): ShapeResult['viewBox'] {
   }
 }
 
+type PlacedLine = { line: TextLine; centerX: number; centerY: number; angle: number }
+
+/**
+ * The least room between one line's letters and the next one's, each turned with its strip:
+ * below zero, they cross. Both edges are straight, so the least room is at one end of where the
+ * two lines run side by side.
+ */
+function inkRoom(upper: PlacedLine, lower: PlacedLine, ascent: number, descent: number) {
+  const edge = ({ line, centerX, centerY, angle }: PlacedLine, y: number) => {
+    const left = line.inkX ?? line.x
+    return [rotatePoint({ x: left, y }, centerX, centerY, angle), rotatePoint({ x: left + line.width, y }, centerX, centerY, angle)]
+  }
+  const [a0, a1] = edge(upper, upper.line.baseline + descent)
+  const [b0, b1] = edge(lower, lower.line.baseline - ascent)
+  const from = Math.max(a0.x, b0.x)
+  const to = Math.min(a1.x, b1.x)
+  if (from > to) return Infinity
+  const yAt = (p: Point, q: Point, x: number) => (q.x === p.x ? p.y : p.y + (x - p.x) * (q.y - p.y) / (q.x - p.x))
+  return Math.min(yAt(b0, b1, from) - yAt(a0, a1, from), yAt(b0, b1, to) - yAt(a0, a1, to))
+}
+
 function buildSeparateShape(
   settings: GeneratorSettings,
   lines: TextLine[],
@@ -630,6 +651,16 @@ function buildSeparateShape(
   const stripStep = settings.style === 'feature'
     ? stripHeight + settings.lineGap
     : Math.max(glyphHeight * 0.86, glyphHeight + settings.lineGap)
+  // Gap variance (19 October 2026): each gap is set a little wider or tighter at random, so some
+  // strips overlap and some barely touch, as on the published partner covers. Its rolls come from
+  // a stream of their own, so it never re-cuts the tape.
+  const gapRandom = mulberry32((settings.seed ^ 0x6a09e667) >>> 0)
+  const gaps = lines.map(() => (gapRandom() * 2 - 1) * (settings.gapVariance ?? 0))
+  // However the gaps and turns fall, a feature line's letters keep clear of the next line's: an
+  // eighth of the size apart, or as close as the gap chosen puts them, if that is closer. (Tape
+  // may cross tape: lettering is drawn over every strip.)
+  const keepClear = settings.style === 'feature' ? Math.min(settings.fontSize * 0.12, stripStep - glyphHeight) : -Infinity
+  let nextTop = 0
   let anchor: ShapeResult['anchor']
   let padded: ShapeResult['padded']
 
@@ -638,15 +669,15 @@ function buildSeparateShape(
     // setting that changes one strip (or its rotation) never re-cuts the others.
     const random = mulberry32((settings.seed ^ Math.imul(index + 1, 0x9e3779b1)) >>> 0)
     const angleRoll = random()
+    const top = nextTop
     const stripLine = {
       ...line,
-      baseline: index * stripStep + padding.vertical + ascent,
+      baseline: top + padding.vertical + ascent,
     }
     stripLines.push(stripLine)
     const inkX = line.inkX ?? line.x
     let left = inkX - padding.left
     let right = inkX + line.width + padding.right
-    const top = index * stripStep
     const bottom = top + stripHeight
     if (index === 0) padded = { left, right, top, bottom }
     const naturalSide = settings.align === 'right' ? 'left' : 'right'
@@ -720,12 +751,21 @@ function buildSeparateShape(
     const xs = points.map((point) => point.x)
     const ys = points.map((point) => point.y)
     const centerX = (Math.min(...xs) + Math.max(...xs)) / 2
-    const centerY = (Math.min(...ys) + Math.max(...ys)) / 2
+    let centerY = (Math.min(...ys) + Math.max(...ys)) / 2
     let angle = settings.rotationVariance > 0 ? (angleRoll * 2 - 1) * settings.rotationVariance : 0
     if (settings.rotationVariance > 0 && Math.abs(angle) < settings.rotationVariance * 0.18) {
       angle = (angle < 0 ? -1 : 1) * settings.rotationVariance * 0.18
     }
     angle = round(angle)
+    // Letters too close to the line above move the whole strip down, as it is cut and turned.
+    const room = index ? inkRoom(strips[index - 1], { line: stripLine, centerX, centerY, angle }, ascent, descent) : Infinity
+    const drop = room < keepClear ? keepClear - room : 0
+    if (drop) {
+      points = points.map((point) => ({ x: point.x, y: point.y + drop }))
+      stripLine.baseline += drop
+      centerY += drop
+    }
+    nextTop = top + drop + stripStep + gaps[index]
     const strip = { path: pointsToPath(points), points, line: stripLine, angle, centerX, centerY }
     strips.push(strip)
     rotatedPoints.push(...points.map((point) => rotatePoint(point, centerX, centerY, angle)))
@@ -961,6 +1001,14 @@ function buildTapeShape(
   const rights: number[] = []
   const lines: TextLine[] = []
   let padded: ShapeResult['padded']
+  // A stagger sets each line in or out a little, by turns, as if placed by hand (Partner posts,
+  // 19 October 2026). Its rolls come from a stream of their own, so it never re-cuts the tape.
+  const staggerRandom = mulberry32((settings.seed ^ 0x2c1b3c6d) >>> 0)
+  const staggerFirst = staggerRandom() < 0.5 ? 1 : -1
+  const staggers = labels.map((_, index) => {
+    const roll = staggerRandom()
+    return (settings.stagger ?? 0) * (index % 2 ? -staggerFirst : staggerFirst) * (0.5 + roll * 0.5)
+  })
 
   effectiveWidths.forEach((effectiveWidth, index) => {
     const measuredWidth = widths[index]
@@ -971,6 +1019,8 @@ function buildTapeShape(
     let blockX = 0
     if (settings.align === 'center') blockX = (maxMeasured - effectiveWidth) / 2
     if (settings.align === 'right') blockX = maxMeasured - effectiveWidth
+    contentX += staggers[index]
+    blockX += staggers[index]
 
     const offsetRoll = random()
     const naturalOffsetRoll = plain || index === personality.targetLine ? 0 : (offsetRoll - 0.5) * energy * 0.025

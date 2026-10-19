@@ -9,6 +9,8 @@ import { AD_TYPE } from '@ad/tape/adTokens'
 // published feature covers measured as Black: stems 0.27 of the cap height, where Bold is 0.20.)
 export const HEADLINE_WEIGHT = AD_TYPE.coverHeadline.weight
 export const FEATURE_WEIGHT = AD_TYPE.coverHeadline.weight
+/** Partner posts are set heavier, 178 on the variable font's scale, near the published Black (19 October 2026). */
+export const PARTNER_WEIGHT = AD_TYPE.coverPartner.weight
 /** Every AD tag (eyebrows, labels, date strips, time tags) is ExtraBold capitals on clean-cut tape (2 Oct 2026). */
 export const EYEBROW_WEIGHT = AD_TYPE.eyebrow.weight
 export const weightFor = (style: CoverStyle) => (style === 'feature' ? FEATURE_WEIGHT : HEADLINE_WEIGHT)
@@ -47,6 +49,8 @@ export interface LayoutInput {
   eyebrow: string
   /** Tracking as a share of the size: the token's (HEADLINE_TRACKING) unless given. */
   tracking?: number
+  /** The weight: the style's (weightFor) unless given, as a Partner post's is. */
+  weight?: number
 }
 
 export interface HeadlineLayout {
@@ -72,7 +76,7 @@ export interface HeadlineLayout {
 /** Sizes, wraps and checks a headline (and its eyebrow) against the brand rules. Pure, so it can be tested with a fake measure. */
 export function layoutHeadline(input: LayoutInput, measure: Measure): HeadlineLayout {
   const caps = input.style === 'feature'
-  const weight = weightFor(input.style)
+  const weight = input.weight ?? weightFor(input.style)
   const tracking = input.tracking ?? HEADLINE_TRACKING
   // Tracking is between the letters, so lines are wrapped and fitted by their tracked widths. The eyebrow is a tag, never tracked.
   const measureLine: Measure = (value, size, lineWeight) => {

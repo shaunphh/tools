@@ -1,7 +1,8 @@
 import { BRAND, type Position } from './artwork'
 import type { ColourChoice } from './furniture'
+import { PARTNER_WEIGHT } from './layout'
 import { POST_FRAME, SAFE_MARGIN, stylePresets, type Frame, type Treatment } from '@ad/tape/settings'
-import type { CoverFormat, CoverStyle, TapeTone } from '@ad/tape/types'
+import type { CoverFormat, CoverStyle, TapeTone, TextAlign } from '@ad/tape/types'
 
 export type CoverKind = 'post' | 'video'
 export type VideoType = 'report' | 'presenter' | 'feature'
@@ -40,8 +41,16 @@ export interface Look {
   tag?: { tape: string; text: string }
   /** The tag a cover of this kind starts with, or null for none. */
   eyebrow: string | null
+  /** False when the tag starts switched off, its words waiting in the box (a Partner post's, 19 October 2026). */
+  eyebrowOn?: boolean
+  /** Alignments open beside the look's own (a Partner post may be centred, 19 October 2026). */
+  aligns?: readonly TextAlign[]
   /** Where the text block starts out, across the room lettering has. */
   position: Position
+  /** The headline's weight, where it isn't the style's own. */
+  weight?: number
+  /** Whether the text block stays at its position: no dragging, nudging or Position choice. */
+  fixed?: boolean
 }
 
 // The narrow column is switched off for now, so every look starts in the medium one.
@@ -68,19 +77,28 @@ export const POST_LOOK: Look = {
 }
 
 /**
- * Partner posts (18 October 2026): the Feature style, capitals on stacked torn strips, centred
- * and slightly turned, for partnerships and special posts only, so they stand apart in a grid of
- * posts. Behind the Partner post switch, off to start with, and it suggests a PARTNER tag.
+ * Partner posts (18 October 2026): the Feature style, capitals on stacked strips, for
+ * partnerships and special posts only, so they stand apart in a grid of posts. Behind the Partner
+ * post switch, off to start with. Set by Shaun, by eye, on 19 October 2026 from a published
+ * partner cover: heavier (PARTNER_WEIGHT); the Rough cut, clinging a touch (104%); the lines
+ * roughly left aligned, each set in or out a few px by turns (or centred); the strips 13px apart,
+ * each gap up to 18px wider or tighter at random, so some overlap and some stand apart, turned up
+ * to 2.8°; the block fixed in the middle, the words don't move; the PARTNER tag waits in its box,
+ * switched off.
  */
 export const PARTNER_LOOK: Look = {
   label: 'Partner post',
-  description: 'Capitals · torn strips',
+  description: 'Capitals · loose strips',
   style: 'feature',
   coverFormat: 'regular',
-  treatment: stylePresets.feature,
+  treatment: { ...stylePresets.feature, mode: 'rough', align: 'left', hugStrength: 1.04, rotationVariance: 2.8, lineGap: 13, gapVariance: 18, stagger: 10 },
   tapes: withGhost('light'),
   eyebrow: 'Partner',
+  eyebrowOn: false,
+  aligns: ['center'],
   position: { x: 50, y: 50 },
+  weight: PARTNER_WEIGHT,
+  fixed: true,
 }
 
 /** The three kinds of video, as on the cover mock-ups. */
