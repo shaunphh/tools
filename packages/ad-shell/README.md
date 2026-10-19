@@ -5,7 +5,7 @@ What every Alternative Dublin tool wears (19 October 2026), so the three read as
 - `shell.css` + `shell.ts`: the masthead (`masthead(current, { tool, actions, title })`) and `applyUiTokens()`, which puts the `ui` tokens on the page as `--ad-ui-*`.
 - `ui.css` + `ui.ts`: the kit below, and three helpers: `toast(message, error?)`, `dialog({ title, body, foot, eyebrow })`, `bindSegmented(group, pick)`.
 
-Every value comes from the `ui` family in `packages/ad-tape/src/ad-tokens.json`; change it there and the three tools and the board follow. The kit page, `/tape-type/board/ui.html`, shows every primitive in every state.
+Every value comes from the `ui` family in `packages/ad-tape/src/ad-tokens.json`; change it there and the three tools and the board follow. The development-only kit page, Tape Type’s `/board/ui.html`, shows every primitive in every state. It is excluded from the live Pages site.
 
 ## The voice
 

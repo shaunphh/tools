@@ -6,7 +6,7 @@ The three tools the team makes its pages with, in one repository with one look, 
 | --- | --- | --- |
 | Event Guide | `tools/event-guide` → `/tools/event-guide/` | The week's events from the Sheet as day pages for the carousel |
 | Guide Studio | `tools/guide-studio` → `/tools/guide-studio/` | Event Guide Picks and What's New carousels from the weekly docs; the team library on Supabase; Published sends stories to the website |
-| Tape Type | `tools/tape-type` → `/tools/tape-type/` | Post, inside and video covers with the house tape headline; the family board at `/tools/tape-type/board/` |
+| Tape Type | `tools/tape-type` → `/tools/tape-type/` | Post, inside and video covers with the house tape headline |
 
 What they share lives in `packages/`:
 
@@ -23,6 +23,8 @@ npm test               # every tool's tests
 npm run build          # dist/: the whole site under /tools/ (SITE_BASE to change it)
 npm run dev:guide-studio   npm run dev:tape-type   npm run dev:event-guide
 ```
+
+The board is a development-only reference at Tape Type’s `/board/`; it is omitted from the Pages build. Design controls use the shared house values by default. Guide Studio’s House style and Tape Type’s held controls are available only in an explicit `?unlocked` design session; restoring a guide backup cannot change the locked house style.
 
 A token change is one edit in `packages/ad-tape/src/ad-tokens.json`; every tool and the board follow. The news site (a separate repository, alternative-dublin) takes the tokens and the geometry from this repository with its own sync script.
 
