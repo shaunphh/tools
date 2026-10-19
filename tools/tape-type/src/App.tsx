@@ -463,7 +463,7 @@ function RangeField({ label, value, min, max, step = 1, suffix = '', disabled = 
   const progress = ((value - min) / (max - min)) * 100
   const shown = format ? format(value) : `${Math.round(value * 100) / 100}${suffix}`
   return (
-    <label className="ad-range range-field" title={title}>
+    <label className={`ad-range range-field${disabled ? ' ad-field--locked' : ''}`} title={title}>
       <span className="ad-range__head field-heading"><span>{label}</span><output>{shown}</output></span>
       <input
         type="range"
