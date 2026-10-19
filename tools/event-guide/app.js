@@ -1,3 +1,4 @@
+import { attachPreview, previewControls, previewSize } from "./vendor/preview.js";
 import {
   assessDateRange,
   filenameForPage,
@@ -117,6 +118,27 @@ const DOM = {
   exportStage: byId("export-stage"),
 };
 
+let previewMode = 'fit';
+let previewControllers = [];
+function layoutPreviewGrid() {
+  const area = DOM.previewGrid.parentElement;
+  const style = getComputedStyle(area);
+  const width = area.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+  const size = previewSize({mode:'fit',width:DESIGN.pageWidth,height:DESIGN.pageHeight,availableWidth:width,availableHeight:Math.max(180,window.innerHeight-300),viewportWidth:window.innerWidth,viewportHeight:window.innerHeight});
+  DOM.previewGrid.style.setProperty('--ad-preview-page-width', `${size.width}px`);
+  DOM.previewGrid.classList.toggle('preview-grid--actual', previewMode === 'actual');
+}
+function setupPreviewControls() {
+  const controls = byId('preview-scale');
+  controls.innerHTML = previewControls(previewMode);
+  controls.querySelectorAll('[data-preview-mode]').forEach(button => button.addEventListener('click', () => {
+    previewMode = button.dataset.previewMode;
+    controls.querySelectorAll('[data-preview-mode]').forEach(b => b.setAttribute('aria-pressed',String(b.dataset.previewMode===previewMode)));
+    layoutPreviewGrid(); previewControllers.forEach(controller => controller.setMode(previewMode));
+  }));
+  window.addEventListener('resize', layoutPreviewGrid);
+  layoutPreviewGrid();
+}
 let generationTimer = 0;
 
 function setSourceState(kind, badge, message) {
@@ -602,6 +624,8 @@ function syncExportControls() {
 }
 
 function renderPages(settings) {
+  previewControllers.forEach(controller => controller.destroy()); previewControllers = [];
+  layoutPreviewGrid();
   DOM.previewGrid.querySelectorAll(".page-frame").forEach((frame) => frameObserver.unobserve(frame));
   DOM.previewGrid.replaceChildren();
   if (!state.pages.length) {
@@ -637,8 +661,12 @@ function renderPages(settings) {
     const frame = document.createElement("div");
     frame.className = "page-frame";
     frame.appendChild(createGuidePage(page, settings));
-    card.append(toolbar, frame);
+    const viewport = document.createElement('div');
+    viewport.className = 'page-card__viewport';
+    viewport.appendChild(frame);
+    card.append(toolbar, viewport);
     DOM.previewGrid.appendChild(card);
+    previewControllers.push(attachPreview({viewport,surface:frame,width:DESIGN.pageWidth,height:DESIGN.pageHeight,mode:previewMode,onResize:size=>{scalePageFrame(frame);const output=byId('preview-scale').querySelector('[data-preview-percent]');if(output)output.textContent=`${Math.round(size.scale*100)}%`}}));
     scalePageFrame(frame);
     frameObserver.observe(frame);
   });
@@ -1174,6 +1202,7 @@ function registerDebugSurface() {
 }
 
 async function initialize() {
+  setupPreviewControls();
   state.sheetGid = restoreSheetGid();
   DOM.sheetGid.value = state.sheetGid;
   bindControls();

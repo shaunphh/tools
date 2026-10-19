@@ -1043,3 +1043,9 @@ input[type='range']:focus-visible {
 
   *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
 }
+
+/* The shared preview scale sits beside the page switcher, outside the artwork. */
+.preview-heading-row { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; }
+.preview-heading-row .making-switcher { flex: 1; min-width: 240px; }
+.stage-wrap.ad-preview-viewport { display: flex; align-items: safe center; justify-content: safe center; }
+@media(max-width:760px){.preview-heading-row .making-switcher{min-width:220px}.preview-heading-row .ad-preview-controls{margin-left:auto}}

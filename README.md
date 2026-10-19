@@ -26,6 +26,8 @@ npm run dev:guide-studio   npm run dev:tape-type   npm run dev:event-guide
 
 The board is a development-only reference at Tape Type’s `/board/`; it is omitted from the Pages build. Design controls use the shared house values by default. Guide Studio’s House style and manual tape-background sizing, and Tape Type’s held controls are available only in an explicit `?unlocked` design session; restoring a guide backup cannot change the locked house style.
 
+The editors share Fit / 100% preview controls. Fit uses the same desktop scale for 1080 × 1350 posts across the three tools; video retains its 9:16 shape. At 100%, one artwork pixel occupies one CSS pixel and the artwork scrolls inside its editor. Preview zoom is temporary and does not change saved content or PNG export resolution. Guide Studio’s Overview remains a thumbnail grid.
+
 A token change is one edit in `packages/ad-tape/src/ad-tokens.json`; every tool and the board follow. The news site (a separate repository, alternative-dublin) takes the tokens and the geometry from this repository with its own sync script.
 
 ## Deploying

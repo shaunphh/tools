@@ -52,3 +52,6 @@ copyFileSync(fileURLToPath(new URL("../../../packages/ad-shell/ui.css", import.m
 mkdirSync(`${tool}vendor/fonts`, { recursive: true });
 copyFileSync(fileURLToPath(new URL("../../../packages/ad-shell/fonts/BarlowGX-SemiCondensed.ttf", import.meta.url)), vendor("fonts/BarlowGX-SemiCondensed.ttf"));
 console.log("vendor/tape.js, ad-tokens.json, ad-tokens.css and shell.css written from the shared packages.");
+
+execFileSync(fileURLToPath(new URL("../../../node_modules/.bin/esbuild", import.meta.url)), [fileURLToPath(new URL("../../../packages/ad-shell/preview.ts", import.meta.url)), "--bundle", "--format=esm", "--target=es2020", `--outfile=${vendor("preview.js")}`], { stdio: "inherit" });
+copyFileSync(fileURLToPath(new URL("../../../packages/ad-shell/preview.css", import.meta.url)), vendor("preview.css"));

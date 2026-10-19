@@ -1,3 +1,5 @@
+import { attachPreview, type PreviewMode } from '@ad/shell/preview'
+import '@ad/shell/preview.css'
 import { masthead } from '@ad/shell/shell'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
@@ -699,6 +701,9 @@ function App() {
   const [sampleOpen, setSampleOpen] = useState(false)
   const [panels, setPanels] = useState<Record<PanelId, boolean>>(loadPanels)
   const previewRef = useRef<HTMLDivElement>(null)
+  const previewViewportRef = useRef<HTMLDivElement>(null)
+  const [previewMode, setPreviewMode] = useState<PreviewMode>('fit')
+  const [displayScale, setDisplayScale] = useState(40)
   const bodyRef = useRef<HTMLTextAreaElement>(null)
   const detailsRef = useRef<HTMLTextAreaElement>(null)
   const dragRef = useRef<Drag | null>(null)
@@ -712,6 +717,12 @@ function App() {
   const frame = frameFor(cover.kind)
   const look = lookFor(cover.kind, cover.video, cover.partner)
   const isInside = cover.kind === 'post' && cover.page === 'inside'
+  useEffect(() => {
+    const viewport=previewViewportRef.current, surface=previewRef.current
+    if(!viewport||!surface)return
+    const controller=attachPreview({viewport,surface,width:frame.width,height:frame.height,mode:previewMode,onResize:size=>setDisplayScale(Math.round(size.scale*100))})
+    return ()=>controller.destroy()
+  }, [frame.width,frame.height,previewMode])
   const fileStem = cover.kind === 'video' ? 'tape-type-video-cover' : isInside ? 'tape-type-instagram-page-2' : 'tape-type-instagram'
   const fonts = useFontStatus()
   const layout = useTextLayout(settings, fonts.version)
@@ -2028,7 +2039,7 @@ function App() {
         </aside>
 
         <section className="stage-column">
-          <div className="making-switcher" role="group" aria-label="What is being made">
+          <div className="preview-heading-row"><div className="making-switcher" role="group" aria-label="What is being made">
             {makingOptions.map((option) => (
               <button key={option.value} aria-pressed={making === option.value} className={making === option.value ? 'active' : ''} onClick={() => chooseMaking(option.value)}>
                 <strong>{option.label}</strong>
@@ -2036,6 +2047,7 @@ function App() {
               </button>
             ))}
           </div>
+          <div className="ad-preview-controls"><div className="ad-segmented" role="group" aria-label="Preview scale"><button type="button" aria-pressed={previewMode==='fit'} onClick={()=>setPreviewMode('fit')}>Fit</button><button type="button" aria-pressed={previewMode==='actual'} title="One artwork pixel per CSS pixel" onClick={()=>setPreviewMode('actual')}>100%</button></div><output aria-label="Displayed scale">{displayScale}%</output></div></div>
           {/* An inside page has no use for these, but keeps their room, so it is shown as large as a cover. */}
           <div className={isInside ? 'preview-toolbar spacer' : 'preview-toolbar'} aria-hidden={isInside || undefined}>
             <div className="background-switcher" role="group" aria-label="Preview background">
@@ -2069,6 +2081,7 @@ function App() {
           </div>
 
           <div
+            ref={previewViewportRef}
             className={dropping ? 'stage-wrap dropping' : 'stage-wrap'}
             onDragOver={(event) => { if (transferHasImage(event.dataTransfer)) { event.preventDefault(); event.dataTransfer.dropEffect = 'copy'; setDropping(true) } }}
             onDragLeave={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDropping(false) }}
@@ -2078,7 +2091,7 @@ function App() {
             <div
               ref={previewRef}
               className={`preview-stage ${isInside ? 'charcoal' : previewBackground}`}
-              style={{ aspectRatio: `${frame.width} / ${frame.height}`, width: `min(100cqw, ${Math.round(frame.width / frame.height * 10000) / 100}cqh)` }}
+              style={{ aspectRatio: `${frame.width} / ${frame.height}` }}
             >
               {!isInside && previewBackground === 'photo' && !photo && (
                 <label className="photo-empty"><Upload size={24} aria-hidden="true" /><span>Choose a photo</span><small>Stays in your browser · included in exports</small><input type="file" accept="image/*" onChange={choosePhoto} /></label>
