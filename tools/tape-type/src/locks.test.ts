@@ -164,12 +164,12 @@ describe('locked choices', () => {
 
 describe('cover options', () => {
   it('start as a post with the logo, the swipe arrow and a darkened photo, colours picked automatically', () => {
-    expect(coverDefaults).toEqual({ kind: 'post', page: 'cover', video: 'report', logo: 'right', logoColour: 'auto', arrow: true, arrowColour: 'auto', darken: true, eyebrowColour: 'auto', partner: false })
+    expect(coverDefaults).toEqual({ kind: 'post', page: 'cover', video: 'report', logo: 'right', logoColour: 'auto', arrow: true, arrowColour: 'auto', darken: true, eyebrowColour: 'auto', partner: false, city: 'dublin' })
   })
 
   it('replaces invalid stored values instead of trusting them', () => {
-    expect(sanitizeCover({ kind: 'story', page: 'back', video: 'vlog', logo: 'middle', logoColour: 'pink', arrow: 'yes', arrowColour: 7, darken: 0, eyebrowColour: 'green', partner: 'yes' })).toEqual(coverDefaults)
-    const chosen = { kind: 'video', page: 'inside', video: 'presenter', logo: 'left', logoColour: 'light', arrow: false, arrowColour: 'dark', darken: false, eyebrowColour: 'yellow', partner: true }
+    expect(sanitizeCover({ kind: 'story', page: 'back', video: 'vlog', logo: 'middle', logoColour: 'pink', arrow: 'yes', arrowColour: 7, darken: 0, eyebrowColour: 'green', partner: 'yes', city: 'cork' })).toEqual(coverDefaults)
+    const chosen = { kind: 'video', page: 'inside', video: 'presenter', logo: 'left', logoColour: 'light', arrow: false, arrowColour: 'dark', darken: false, eyebrowColour: 'yellow', partner: true, city: 'belfast' }
     expect(sanitizeCover(chosen)).toEqual(chosen)
     expect(sanitizeCover({})).toEqual(coverDefaults)
   })

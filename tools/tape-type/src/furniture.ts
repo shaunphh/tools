@@ -1,11 +1,15 @@
 import logoLeftSvg from './assets/logo-left.svg?raw'
 import logoRightSvg from './assets/logo-right.svg?raw'
+import belfastLeftSvg from './assets/logo-belfast-left.svg?raw'
+import belfastRightSvg from './assets/logo-belfast-right.svg?raw'
 import swipeArrowSvg from './assets/swipe-arrow.svg?raw'
 import { BRAND, type Layer, type Obstacle } from './artwork'
 import { POST_FRAME, SAFE_MARGIN, type Frame } from '@ad/tape/settings'
 import { AD_SIZE } from '@ad/tape/adTokens'
 
 export type LogoSide = 'off' | 'left' | 'right'
+/** Whose logo a cover carries: Alternative Dublin's, or Alternative Belfast's (20 October 2026). */
+export type LogoCity = 'dublin' | 'belfast'
 export type MarkColour = 'yellow' | 'light' | 'dark'
 /** A mark's colour is picked for it from what it sits on, unless one is chosen. */
 export type ColourChoice = 'auto' | MarkColour
@@ -16,7 +20,11 @@ export interface Furniture {
   logoColour: ColourChoice
   arrow: boolean
   arrowColour: ColourChoice
+  city: LogoCity
 }
+
+/** Which marks are placed: the logo's side (and whose logo, Dublin's unless said), and the arrow. */
+export type Placing = Pick<Furniture, 'logo' | 'arrow'> & { city?: LogoCity }
 
 export interface Mark {
   width: number
@@ -34,7 +42,11 @@ export function readMark(svg: string): Mark {
   return { width, height, paths }
 }
 
-const logos = { left: readMark(logoLeftSvg), right: readMark(logoRightSvg) }
+// Each logo in two lockups, the city under the start of the tape or under its end.
+const logos: Record<LogoCity, Record<Exclude<LogoSide, 'off'>, Mark>> = {
+  dublin: { left: readMark(logoLeftSvg), right: readMark(logoRightSvg) },
+  belfast: { left: readMark(belfastLeftSvg), right: readMark(belfastRightSvg) },
+}
 const swipeArrow = readMark(swipeArrowSvg)
 
 // A fifth of the cover wide: a little smaller than on the first mock-up (250), a little larger
@@ -62,13 +74,13 @@ export const COVER_MARKS: MarkSizes = { margin: SAFE_MARGIN, logoWidth: LOGO_WID
  * Where each mark sits: the logo in a top corner, the arrow in the bottom right one, 80px in
  * from the edges of the whole cover (on a video cover that is outside what the profile grid shows).
  */
-export function furnitureBoxes(furniture: Pick<Furniture, 'logo' | 'arrow'>, frame: Frame = POST_FRAME, sizes: Partial<MarkSizes> = {}): { logo?: Box; arrow?: Box } {
+export function furnitureBoxes(furniture: Placing, frame: Frame = POST_FRAME, sizes: Partial<MarkSizes> = {}): { logo?: Box; arrow?: Box } {
   const { margin, logoWidth, arrowWidth } = { ...COVER_MARKS, ...sizes }
   const right = frame.width - margin
   const bottom = frame.height - margin
   let logo: Box | undefined
   if (furniture.logo !== 'off') {
-    const size = sized(logos[furniture.logo], logoWidth)
+    const size = sized(logos[furniture.city ?? 'dublin'][furniture.logo], logoWidth)
     logo = { x: furniture.logo === 'left' ? margin : right - size.width, y: margin, ...size }
   }
   let arrow: Box | undefined
@@ -80,16 +92,16 @@ export function furnitureBoxes(furniture: Pick<Furniture, 'logo' | 'arrow'>, fra
 }
 
 /** The logo and swipe arrow as layers, in artboard coordinates, each in the colour settled for it. */
-export function buildFurniture(furniture: Pick<Furniture, 'logo' | 'arrow'>, colours: { logo: MarkColour; arrow: MarkColour }, frame: Frame = POST_FRAME, sizes: Partial<MarkSizes> = {}): Layer[] {
+export function buildFurniture(furniture: Placing, colours: { logo: MarkColour; arrow: MarkColour }, frame: Frame = POST_FRAME, sizes: Partial<MarkSizes> = {}): Layer[] {
   const boxes = furnitureBoxes(furniture, frame, sizes)
   return [
-    ...(boxes.logo && furniture.logo !== 'off' ? draw(logos[furniture.logo], boxes.logo, MARK_FILLS[colours.logo]) : []),
+    ...(boxes.logo && furniture.logo !== 'off' ? draw(logos[furniture.city ?? 'dublin'][furniture.logo], boxes.logo, MARK_FILLS[colours.logo]) : []),
     ...(boxes.arrow ? draw(swipeArrow, boxes.arrow, MARK_FILLS[colours.arrow]) : []),
   ]
 }
 
 /** Each mark with the clear space around it: what the headline's lettering keeps out of. */
-export function furnitureObstacles(furniture: Pick<Furniture, 'logo' | 'arrow'>, frame: Frame = POST_FRAME): Obstacle[] {
+export function furnitureObstacles(furniture: Placing, frame: Frame = POST_FRAME): Obstacle[] {
   const boxes = furnitureBoxes(furniture, frame)
   return [boxes.logo, boxes.arrow].flatMap((box) => (box ? [{
     left: round(box.x - CLEARANCE),

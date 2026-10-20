@@ -21,6 +21,24 @@ describe('cover furniture', () => {
     expect(Math.abs(left.height - right.height)).toBeLessThan(1)
   })
 
+  it('puts Alternative Belfast’s logo in the same corner at the same width, its own artwork', () => {
+    for (const logo of ['left', 'right'] as const) {
+      const dublin = furnitureBoxes({ logo, arrow: false }).logo!
+      const belfast = furnitureBoxes({ logo, arrow: false, city: 'belfast' }).logo!
+      expect(belfast).toMatchObject({ x: dublin.x, y: dublin.y, width: dublin.width })
+      // Belfast's lockup is a little shorter for its width than Dublin's.
+      expect(belfast.height).toBeGreaterThan(dublin.height * 0.85)
+      expect(belfast.height).toBeLessThan(dublin.height)
+      const paths = (city: 'dublin' | 'belfast') => buildFurniture({ logo, arrow: false, city }, { logo: 'yellow', arrow: 'yellow' }).map((layer) => (layer.kind === 'path' ? layer.d : ''))
+      expect(paths('belfast')).not.toEqual(paths('dublin'))
+      expect(furnitureObstacles({ logo, arrow: false, city: 'belfast' })[0].bottom).toBeLessThan(furnitureObstacles({ logo, arrow: false })[0].bottom)
+    }
+    // The two Belfast lockups are one artwork with BELFAST moved.
+    const left = furnitureBoxes({ logo: 'left', arrow: false, city: 'belfast' }).logo!
+    const right = furnitureBoxes({ logo: 'right', arrow: false, city: 'belfast' }).logo!
+    expect(Math.abs(left.height - right.height)).toBeLessThan(1)
+  })
+
   it('sits the swipe arrow in the bottom right corner of the safe area, a little smaller than it was drawn', () => {
     const arrow = furnitureBoxes(both).arrow!
     expect(arrow.width).toBeCloseTo(ARROW_WIDTH, 5)

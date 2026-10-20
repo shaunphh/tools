@@ -225,6 +225,17 @@ describe('saved projects', () => {
     expect(migrated).toEqual({...BASE_BRAND,margin:60})
     expect(sanitizeBrand({...migrated,titleWeight:174,dateWeight:165})).toMatchObject({titleWeight:174,dateWeight:165,bodyWeight:400})
   })
+  it('keeps a guide’s logo city, Dublin unless it was saved as Belfast', () => {
+    const issue=makeIssue('picks',true)
+    expect(issue.cover.logoCity).toBe('dublin')
+    const old=JSON.parse(JSON.stringify(issue)); delete old.cover.logoCity
+    expect(sanitizeIssue(old).cover.logoCity).toBe('dublin')
+    expect(sanitizeIssue({...old,cover:{...old.cover,logoCity:'cork'}}).cover.logoCity).toBe('dublin')
+    expect(sanitizeIssue({...old,cover:{...old.cover,logoCity:'belfast'}}).cover.logoCity).toBe('belfast')
+    // Both Belfast lockups are there for the cover to load.
+    expect(readFileSync(new URL('../public/logo-belfast-left.svg', import.meta.url), 'utf8')).toContain('<path')
+    expect(readFileSync(new URL('../public/logo-belfast-right.svg', import.meta.url), 'utf8')).toContain('<path')
+  })
   it('enforces series restrictions without destroying saved options when designs are locked', () => {
     const issue=makeIssue('picks',true)
     Object.assign(issue.cover,{layout:4,orientation:'horizontal',logoPosition:'left',markColour:'dark',divider:'yellow',subtitlePosition:'tape'})

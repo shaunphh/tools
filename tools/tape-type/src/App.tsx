@@ -50,6 +50,7 @@ import {
   settleColour,
   type Box,
   type ColourChoice,
+  type LogoCity,
   type LogoSide,
   type Ruling,
 } from './furniture'
@@ -168,6 +169,10 @@ const columnOptions = columns.map((entry) => ({ value: entry.value, label: entry
 const formatOptions: { value: GeneratorSettings['coverFormat']; label: string }[] = [
   { value: 'regular', label: 'Regular' },
   { value: 'series', label: 'Series' },
+]
+const cityOptions: { value: LogoCity; label: string }[] = [
+  { value: 'dublin', label: 'Dublin' },
+  { value: 'belfast', label: 'Belfast' },
 ]
 const logoOptions: { value: LogoSide; label: string }[] = [
   { value: 'off', label: 'Off' },
@@ -772,8 +777,8 @@ function App() {
   const marksLogo = isInside ? (locksOff ? inside.logo : 'off') : cover.logo
   const marksArrow = isInside ? inside.arrow : cover.arrow
   const markSizes = isInside ? INSIDE_MARKS : undefined
-  const markBoxes = useMemo(() => furnitureBoxes({ logo: marksLogo, arrow: marksArrow }, frame, markSizes), [marksLogo, marksArrow, frame, markSizes])
-  const obstacles = useMemo(() => furnitureObstacles({ logo: cover.logo, arrow: cover.arrow }, frame), [cover.logo, cover.arrow, frame])
+  const markBoxes = useMemo(() => furnitureBoxes({ logo: marksLogo, arrow: marksArrow, city: cover.city }, frame, markSizes), [marksLogo, marksArrow, cover.city, frame, markSizes])
+  const obstacles = useMemo(() => furnitureObstacles({ logo: cover.logo, arrow: cover.arrow, city: cover.city }, frame), [cover.logo, cover.arrow, cover.city, frame])
 
   const measureWidth = useMemo<MeasureWidth>(() => {
     const context = document.createElement('canvas').getContext('2d')
@@ -846,8 +851,8 @@ function App() {
     return { logo, arrow: settleColour(tied ? logo.colour : arrowChoice, groundUnder(markBoxes.arrow)) }
   }, [tied, isInside, cover.logoColour, arrowChoice, markBoxes, shownPhoto, view, darken, previewBackground, photoFrame, bannerTop])
   const furniture = useMemo(
-    () => buildFurniture({ logo: marksLogo, arrow: marksArrow }, { logo: rulings.logo.colour, arrow: rulings.arrow.colour }, frame, markSizes),
-    [marksLogo, marksArrow, rulings.logo.colour, rulings.arrow.colour, frame, markSizes],
+    () => buildFurniture({ logo: marksLogo, arrow: marksArrow, city: cover.city }, { logo: rulings.logo.colour, arrow: rulings.arrow.colour }, frame, markSizes),
+    [marksLogo, marksArrow, cover.city, rulings.logo.colour, rulings.arrow.colour, frame, markSizes],
   )
   // Rotation or a wide eyebrow can make the lettering bigger than the safe area even when every line fits its column.
   const lettersTooBig = range.x.excess > 4 || range.y.excess > 4
@@ -1536,7 +1541,7 @@ function App() {
     photo: !anyPhoto
       ? 'No photo yet'
       : [shownPhoto ? (photoMoved ? `Zoom ${Math.round(view.zoom * 100)}%` : 'Centred') : isInside ? 'No picture' : 'Hidden', cover.darken ? 'Darkened' : 'As shot'].join(' · '),
-    marks: [marksLogo === 'off' ? 'No logo' : `Logo ${marksLogo}, ${rulings.logo.colour}`, marksArrow ? `Arrow, ${rulings.arrow.colour}` : 'No arrow'].join(' · '),
+    marks: [marksLogo === 'off' ? 'No logo' : `${cover.city === 'belfast' ? 'Belfast logo' : 'Logo'} ${marksLogo}, ${rulings.logo.colour}`, marksArrow ? `Arrow, ${rulings.arrow.colour}` : 'No arrow'].join(' · '),
     style: `${isFeature ? 'Feature' : 'Headline'} · Barlow ${WEIGHT_NAMES[layout.weight] ?? layout.weight}`,
     tape: noTape ? 'No tape' : `${toneLabel} · ${settings.perLine ? 'Strips' : 'Block'} · ${modeLabel}`,
     layout: [
@@ -1932,6 +1937,7 @@ function App() {
           </Panel>
 
           <Panel id="marks" title="Logo & arrow" summary={summaries.marks} open={panels.marks} onToggle={togglePanel}>
+            <Segmented label="City" note={cover.city === 'belfast' ? 'Alternative Belfast’s logo' : 'Alternative Dublin’s logo'} value={cover.city} options={cityOptions} onChange={(city) => updateCover('city', city)} />
             <Segmented label="Logo" note={isInside ? (locksOff ? 'Small, top corner' : 'Not on an inside page for now') : 'Top corner'} value={marksLogo} options={logoOptions} locked={(logo) => isInside && !locksOff && logo !== 'off'} onChange={(logo) => (isInside ? updateInside('logo', logo) : updateCover('logo', logo))} />
             <Segmented
               label="Logo colour"

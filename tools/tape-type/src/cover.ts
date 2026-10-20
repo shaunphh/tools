@@ -1,5 +1,5 @@
 import { VIDEO_TYPES, type CoverKind, type VideoType } from './formats'
-import type { ColourChoice, Furniture, LogoSide } from './furniture'
+import type { ColourChoice, Furniture, LogoCity, LogoSide } from './furniture'
 
 /** What is being made, and what it carries besides its headline: the logo, the swipe arrow, and a darkened photo. */
 export interface CoverOptions extends Furniture {
@@ -16,9 +16,10 @@ export interface CoverOptions extends Furniture {
 }
 
 export const COVER_KEY = 'tape-type-cover-v1'
-export const coverDefaults: CoverOptions = { kind: 'post', page: 'cover', video: 'report', logo: 'right', logoColour: 'auto', arrow: true, arrowColour: 'auto', darken: true, eyebrowColour: 'auto', partner: false }
+export const coverDefaults: CoverOptions = { kind: 'post', page: 'cover', video: 'report', logo: 'right', logoColour: 'auto', arrow: true, arrowColour: 'auto', darken: true, eyebrowColour: 'auto', partner: false, city: 'dublin' }
 
 const LOGO_SIDES: readonly LogoSide[] = ['off', 'left', 'right']
+const CITIES: readonly LogoCity[] = ['dublin', 'belfast']
 const COLOUR_CHOICES: readonly ColourChoice[] = ['auto', 'yellow', 'light', 'dark']
 
 /** Stored options are untrusted, like the generator settings. */
@@ -36,6 +37,7 @@ export function sanitizeCover(stored: Record<string, unknown>): CoverOptions {
     darken: flag(stored.darken, coverDefaults.darken),
     eyebrowColour: colour(stored.eyebrowColour, coverDefaults.eyebrowColour),
     partner: flag(stored.partner, coverDefaults.partner),
+    city: CITIES.includes(stored.city as LogoCity) ? stored.city as LogoCity : coverDefaults.city,
   }
 }
 

@@ -157,7 +157,7 @@ export async function renderPage(canvas: HTMLCanvasElement, issue: Issue, page: 
   const needed = page === 0 ? Array.from({length:look.count},(_,i)=>coverPhoto(issue,i)) : [issue.stories[page - 1]?.photo || '']
   const assets: Record<string, HTMLImageElement> = {}
   const errors: string[] = []
-  await Promise.all([...new Set([...needed.filter(Boolean), ...(page === 0 ? [`/logo-${look.logoPosition==='left'?'left':'right'}.svg`,'/swipe-arrow.svg'] : [])])].map(async url => {
+  await Promise.all([...new Set([...needed.filter(Boolean), ...(page === 0 ? [logoFile(issue, look.logoPosition),'/swipe-arrow.svg'] : [])])].map(async url => {
     try { assets[url] = await loadImage(url) } catch { errors.push('A photo or brand mark could not load.') }
   }))
   const out = document.createElement('canvas'); out.width = WIDTH * scale; out.height = HEIGHT * scale
@@ -287,6 +287,8 @@ export function coverFrames(count: number, orientation: Issue['cover']['orientat
   const w = (WIDTH - gap * (columns - 1)) / columns, h = (HEIGHT - gap * (rows - 1)) / rows
   return Array.from({ length: count }, (_, i) => ({ x: (i % columns) * (w + gap), y: Math.floor(i / columns) * (h + gap), w, h }))
 }
+/** The logo's file: Alternative Dublin's, or Alternative Belfast's (20 October 2026), the city under the start or the end of its tape. */
+const logoFile = (issue: Issue, position: string) => `/logo-${issue.cover.logoCity === 'belfast' ? 'belfast-' : ''}${position === 'left' ? 'left' : 'right'}.svg`
 function tintedMark(ctx: CanvasRenderingContext2D, image: HTMLImageElement | undefined, x: number, y: number, width: number, colour: string) {
   if (!image) return
   const height = width * image.naturalHeight / image.naturalWidth
@@ -312,7 +314,7 @@ function drawCover(ctx: CanvasRenderingContext2D, issue: Issue, brand: Brand, as
     ctx.fillStyle = foot; ctx.fillRect(0, HEIGHT - FOOT_SCRIM.height, WIDTH, FOOT_SCRIM.height)
   }
   const markInk = look.markColour === 'yellow' ? brand.yellow : look.markColour === 'dark' ? brand.dark : brand.light
-  const logo = assets[`/logo-${look.logoPosition === 'left' ? 'left' : 'right'}.svg`], arrow = assets['/swipe-arrow.svg']
+  const logo = assets[logoFile(issue, look.logoPosition)], arrow = assets['/swipe-arrow.svg']
   const logoFoot = SAFE + (logo ? LOGO_WIDTH * logo.naturalHeight / logo.naturalWidth : 87), arrowTop = HEIGHT - SAFE - (arrow ? ARROW_WIDTH * arrow.naturalHeight / arrow.naturalWidth : 87)
   if (look.logoPosition !== 'off') tintedMark(ctx, logo, look.logoPosition === 'left' ? SAFE : WIDTH - SAFE - LOGO_WIDTH, SAFE, LOGO_WIDTH, markInk)
   tintedMark(ctx, arrow, WIDTH - SAFE - ARROW_WIDTH, arrowTop, ARROW_WIDTH, markInk)

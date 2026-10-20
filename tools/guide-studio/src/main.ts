@@ -173,6 +173,7 @@ function coverPanel() {
   ${range('Headline position','cover.position',c.position,30,70,1,'%')}
   <p class="ad-hint">Or drag the headline up and down on the cover. Drag a photo there to reframe it.</p>
   <div class="ad-rule"></div>${heading('Cover details',open?'Design options open':'Fixed for now')}
+  ${choices('City','logoCity',c.logoCity,[['dublin','Dublin'],['belfast','Belfast']])}
   ${choices('Logo position','logoPosition',look.logoPosition,[['left','Left',!open],['right','Right'],['off','Off',!open]])}
   ${choices('Logo & arrow colour','markColour',open?c.markColour:'series',open?[['series','Match series'],['yellow','Yellow'],['white','White'],['dark','Ink']]:[['series',fixedColour],[issue().series==='picks'?'white':'yellow',issue().series==='picks'?'White':'Yellow',true],['dark','Ink',true]])}
   ${choices('Photo divider','divider',look.divider,[['dark','Dark'],['light','Light',!open],['yellow','Yellow',!open]])}
