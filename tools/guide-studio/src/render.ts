@@ -193,13 +193,20 @@ function storyLayout(ctx: CanvasRenderingContext2D, s: Story, issue: Issue, bran
   const titleLines = balancedWrap(ctx, s.title.toUpperCase(), w)
   const titleTop = h + PICTURE_TO_TITLE
   const bodyTop = titleTop + titleLines.length * brand.titleSize * 1.02 + TITLE_TO_BODY
-  // The footer: handles on the left, two stacking one to a line, as two lines of details do on the right.
-  const info = issue.series === 'picks' ? [s.date, s.time, s.venue].filter(Boolean).join(' · ') : ''
+  // The footer: handles on the left, two stacking one to a line. Picks details on the right keep to one line when they
+  // fit; when they don't, they stack (21 Nov 2026, the team's ask): date and time, then the venue on a line of its own,
+  // so a venue such as Smock Alley Theatre no longer breaks across the two. Stacked, a line may take the room the
+  // handles leave. Short details stay on one line so the story keeps that line of room (the 80 to 90 word goal).
+  const picks = issue.series === 'picks'
+  const when = picks ? [s.date.trim(), s.time.trim()].filter(Boolean).join(' · ') : '', venue = picks ? s.venue.trim() : ''
+  const info = [when, venue].filter(Boolean).join(' · ')
   const handles = handlesOf(s.handle)
   footerFont(ctx, s.handle)
   const handleLines = handles.slice(0, 2).flatMap(handle => wrap(ctx, handle, info ? w * .47 : w))
+  const handleWidth = Math.max(0, ...handleLines.map(line => ctx.measureText(line).width))
   footerFont(ctx, info)
-  const infoLines = info ? wrap(ctx, info, w * .49) : []
+  const infoWidth = Math.max(w * .49, w - handleWidth - w * .04)
+  const infoLines = !info ? [] : wrap(ctx, info, w * .49).length === 1 ? [info] : [when, venue].filter(Boolean).flatMap(part => wrap(ctx, part, infoWidth))
   footerFont(ctx, 'H')
   const footY = HEIGHT - 58, capHeight = ctx.measureText('H').actualBoundingBoxAscent || FOOTER.size * .7
   const footerTop = footY - (Math.min(2, Math.max(1, handleLines.length, infoLines.length)) - 1) * FOOTER.step - capHeight
